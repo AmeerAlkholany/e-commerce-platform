@@ -2,24 +2,18 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
-// Next.js hot-reloading workaround for PrismaClient singleton in development
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+// Grab your connection string
+const connectionString = process.env.DATABASE_URL;
 
-let prismaInstance: PrismaClient;
+// Create a custom Postgres Pool instance with explicit connection timeout rules
+const pool = new Pool({
+  connectionString,
+  connectionTimeoutMillis: 10000, // Timeout to acquire connection (10s)
+  // Bumping the underlying network authentication stream window
+  statement_timeout: 30000,
+});
 
-if (process.env.NODE_ENV === "production") {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  const adapter = new PrismaPg(pool);
-  prismaInstance = new PrismaClient({ adapter });
-} else {
-  if (!globalForPrisma.prisma) {
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-    const adapter = new PrismaPg(pool);
-    globalForPrisma.prisma = new PrismaClient({ adapter });
-  }
-  prismaInstance = globalForPrisma.prisma;
-}
+const adapter = new PrismaPg(pool);
 
-export const prisma = prismaInstance;
+// Instantiate global client
+export const prisma = new PrismaClient({ adapter });
