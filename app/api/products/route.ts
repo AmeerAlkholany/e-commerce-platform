@@ -25,6 +25,7 @@ export async function GET(request: Request) {
       where: whereClause,
       include: {
         categories: true,
+        reviews: true,
       },
     });
 

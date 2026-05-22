@@ -45,6 +45,32 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Custom Professional E-commerce Theme */
+  --color-tertiary-fixed-dim: #ffb3ae;
+  --color-error: #ba1a1a;
+  --color-primary-custom: #059669;
+  --color-surface-dim: #d8dadc;
+  --color-on-primary-fixed-variant: #005137;
+  --color-surface-container-highest: #e0e3e5;
+  --color-on-surface: #191c1e;
+  --color-secondary-container: #d5e0f8;
+  --color-surface-bright: #f7f9fb;
+  --color-surface-variant: #e0e3e5;
+  --color-surface-container: #eceef0;
+  --color-surface-container-low: #f2f4f6;
+  --color-surface-container-high: #e6e8ea;
+  --color-surface-container-lowest: #ffffff;
+  --color-outline: #6d7a72;
+  --color-outline-variant: #bccac0;
+  --color-on-surface-variant: #3d4a42;
+
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2.5rem;
+  --spacing-xl: 4rem;
+  --spacing-container-max: 1280px;
+
+  --font-display: "Inter", sans-serif;
 }
 
 :root {
@@ -114,6 +140,16 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 @layer base {
