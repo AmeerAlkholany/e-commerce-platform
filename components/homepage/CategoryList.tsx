@@ -9,11 +9,10 @@ interface CategoryListProps {
 export const CategoryList = ({ categories, loading }: CategoryListProps) => {
   if (loading) {
     return (
-      <section className="py-xl max-w-container-max mx-auto px-md">
-        <div className="h-8 w-48 bg-surface-container animate-pulse rounded mb-lg"></div>
-        <div className="flex gap-lg overflow-x-auto no-scrollbar pb-xs">
+      <section className="py-20 max-w-7xl mx-auto px-6">
+        <div className="flex gap-10 overflow-x-auto no-scrollbar justify-center">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex flex-col items-center gap-sm min-w-[120px]">
+            <div key={i} className="flex flex-col items-center gap-4 min-w-[120px]">
               <div className="w-24 h-24 rounded-full bg-surface-container animate-pulse"></div>
               <div className="h-4 w-20 bg-surface-container animate-pulse rounded"></div>
             </div>
@@ -24,24 +23,25 @@ export const CategoryList = ({ categories, loading }: CategoryListProps) => {
   }
 
   return (
-    <section className="py-xl max-w-container-max mx-auto px-md">
-      <div className="flex justify-between items-end mb-lg">
-        <div>
-          <h2 className="text-[30px] leading-[1.25] tracking-[-0.01em] font-semibold text-on-surface">Browse by Category</h2>
-          <p className="text-[16px] leading-[1.5] text-on-surface-variant">Explore our wide range of curated collections</p>
-        </div>
+    <section className="py-20 max-w-7xl mx-auto px-6">
+      <div className="mb-12">
+        <h2 className="text-3xl font-bold text-on-surface mb-2">Browse by Category</h2>
+        <p className="text-on-surface-variant">Explore our wide range of curated collections</p>
       </div>
-      <div className="flex gap-lg overflow-x-auto no-scrollbar pb-xs">
+      <div className="flex gap-8 md:gap-12 overflow-x-auto no-scrollbar pb-4 md:justify-start lg:justify-start">
         {categories.map((category) => (
-          <div key={category.id} className="flex flex-col items-center gap-sm min-w-[120px] group cursor-pointer">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-transparent group-hover:border-primary-custom transition-all p-1 bg-surface-container">
-              <img 
-                className="w-full h-full object-cover rounded-full" 
-                alt={category.name}
-                src={category.image_url || `https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop`} 
-              />
+          <div key={category.id} className="flex flex-col items-center gap-4 min-w-[100px] group cursor-pointer">
+            <div className="relative w-24 h-24">
+              <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-primary-custom transition-all duration-300 scale-110"></div>
+              <div className="w-full h-full rounded-full overflow-hidden bg-surface-container shadow-sm p-1">
+                <img 
+                  className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500" 
+                  alt={category.name}
+                  src={category.image_url || `https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop`} 
+                />
+              </div>
             </div>
-            <span className="font-semibold text-[14px] text-on-surface">{category.name}</span>
+            <span className="font-bold text-sm text-on-surface group-hover:text-primary-custom transition-colors">{category.name}</span>
           </div>
         ))}
       </div>
