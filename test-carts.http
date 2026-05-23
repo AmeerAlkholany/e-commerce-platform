@@ -1,0 +1,59 @@
+### 1. Create a Test User (Required for the cart)
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password_hash": "dummy_hash"
+}
+
+### (If the above fails because the users API doesn't have a POST, you might need to create a user directly in Supabase or via a signup page)
+
+---
+
+### 2. Create a Test Product (Required to add an item to the cart)
+POST http://localhost:3000/api/products
+Content-Type: application/json
+
+{
+  "name": "Test Product",
+  "price": 19.99
+}
+
+---
+
+### 3. GET the Cart
+# Replace `1` with the actual userId you got from step 1
+GET http://localhost:3000/api/carts?userId=1
+
+---
+
+### 4. POST (Add item to Cart)
+# Replace `userId` and `productId` with actual IDs from your database
+POST http://localhost:3000/api/carts
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "productId": 1,
+  "quantity": 2
+}
+
+---
+
+### 5. PUT (Update Cart Item Quantity)
+# Replace `cartItemId` with the ID returned from the POST request above
+PUT http://localhost:3000/api/carts
+Content-Type: application/json
+
+{
+  "cartItemId": 1,
+  "quantity": 5
+}
+
+---
+
+### 6. DELETE (Remove Item from Cart)
+# Replace `1` with the actual cartItemId
+DELETE http://localhost:3000/api/carts?cartItemId=1
