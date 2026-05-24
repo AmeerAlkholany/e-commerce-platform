@@ -1,0 +1,48 @@
+### 1. Sign Up a New User
+POST http://localhost:3000/api/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "email": "jane.doe@example.com",
+  "password": "SecurePassword123"
+}
+
+### 2. Sign Up Validation (Short Password - should fail)
+POST http://localhost:3000/api/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Jane Doe Fail",
+  "email": "jane.fail@example.com",
+  "password": "123"
+}
+
+### 3. Log In (Should succeed and set a session cookie)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "jane.doe@example.com",
+  "password": "SecurePassword123"
+}
+
+### 4. Log In Validation (Wrong Password - should fail)
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "jane.doe@example.com",
+  "password": "WrongPassword"
+}
+
+### 5. Get Current User Profile (Checks session cookie)
+# Note: If testing in VS Code REST Client or similar, the session cookie set in step 3
+# will be automatically sent in this request.
+GET http://localhost:3000/api/auth/me
+
+### 6. Log Out (Should clear session cookie)
+POST http://localhost:3000/api/auth/logout
+
+### 7. Get Profile after Log Out (Should return 401 Unauthorized)
+GET http://localhost:3000/api/auth/me
