@@ -1,6 +1,6 @@
-import { HeroSection } from "./_components/HeroSection";
-import { FeaturedCategories } from "./_components/FeaturedCategories";
-import { FeaturedProducts } from "./_components/FeaturedProducts";
+import { HeroSection } from "@/components/HeroSection";
+import { FeaturedCategories } from "@/components/FeaturedCategories";
+import { FeaturedProducts } from "@/components/FeaturedProducts";
 
 export default function Home() {
   return (

@@ -3,6 +3,8 @@ import { getUserFromRequest } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/json";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   try {
     const sessionUser = await getUserFromRequest(request);

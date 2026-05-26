@@ -118,7 +118,7 @@ export async function getUserFromRequest(request?: Request): Promise<{ id: numbe
     if (request) {
       const cookieHeader = request.headers.get("cookie");
       if (cookieHeader) {
-        const match = cookieHeader.match(/session=([^;]+)/);
+        const match = cookieHeader.match(/(?:^|;\s*)session=([^;]+)/);
         if (match) {
           token = match[1];
         }
