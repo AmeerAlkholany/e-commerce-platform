@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +15,6 @@ import {
   Percent,
   Plus,
   Search,
-  Filter,
   BarChart3,
   Loader2,
   Trash2,
@@ -28,7 +27,6 @@ import {
   ChevronRight,
   Download,
   ArrowUpDown,
-  ImageIcon,
   ClipboardList,
   Eye,
   Truck,
@@ -36,6 +34,9 @@ import {
   XCircle,
   Clock,
   CreditCard,
+  FileText,
+  Crown,
+  Star,
 } from "lucide-react";
 
 import {
@@ -49,6 +50,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  Legend,
 } from "recharts";
 
 // ─── Types ─────────────────────────────────────────────
@@ -109,6 +111,15 @@ interface Order {
   payments: Payment[];
 }
 
+interface ReportData {
+  salesByMonth: { name: string; sales: number }[];
+  topProducts: { id: number; name: string; quantity: number; revenue: number }[];
+  topCustomers: { id: number; name: string; email: string; ordersCount: number; totalSpent: number }[];
+  categoryData: { name: string; value: number }[];
+  totalOrders: number;
+  totalRevenue: number;
+}
+
 interface Toast {
   id: string;
   message: string;
@@ -118,14 +129,19 @@ interface Toast {
 // ─── Toast Hook ────────────────────────────────────────
 function useToast() {
   const [toasts, setToasts] = useState<Toast[]>([]);
+
   const addToast = useCallback((message: string, type: Toast["type"] = "success") => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
   }, []);
+
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
+
   return { toasts, addToast, removeToast };
 }
 
@@ -150,7 +166,9 @@ function ToastContainer({ toasts, removeToast }: { toasts: Toast[]; removeToast:
             {toast.type === "error" && <AlertTriangle className="size-4" />}
             {toast.type === "warning" && <AlertTriangle className="size-4" />}
             <span>{toast.message}</span>
-            <button onClick={() => removeToast(toast.id)} className="ml-auto hover:opacity-70"><X className="size-3.5" /></button>
+            <button onClick={() => removeToast(toast.id)} className="ml-auto hover:opacity-70">
+              <X className="size-3.5" />
+            </button>
           </motion.div>
         ))}
       </AnimatePresence>
@@ -161,8 +179,17 @@ function ToastContainer({ toasts, removeToast }: { toasts: Toast[]; removeToast:
 // ─── Stock Badge ──────────────────────────────────────
 function StockBadge({ stock }: { stock: number }) {
   const status = stock === 0 ? "Out of Stock" : stock <= 5 ? "Low Stock" : "In Stock";
-  const classes = status === "In Stock" ? "bg-luxe-primary/10 text-luxe-primary" : status === "Low Stock" ? "bg-luxe-tertiary-fixed text-luxe-tertiary" : "bg-luxe-error-container text-luxe-on-error-container";
-  return <Badge className={`text-[10px] font-bold uppercase py-0.5 px-2 rounded-md ${classes}`}>{status}</Badge>;
+  const classes =
+    status === "In Stock"
+      ? "bg-luxe-primary/10 text-luxe-primary"
+      : status === "Low Stock"
+      ? "bg-luxe-tertiary-fixed text-luxe-tertiary"
+      : "bg-luxe-error-container text-luxe-on-error-container";
+  return (
+    <Badge className={`text-[10px] font-bold uppercase py-0.5 px-2 rounded-md ${classes}`}>
+      {status}
+    </Badge>
+  );
 }
 
 // ─── Order Status Badge ────────────────────────────────
@@ -184,7 +211,7 @@ function OrderStatusBadge({ status }: { status: string }) {
 
 // ─── Main Component ────────────────────────────────────
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<"overview" | "products" | "orders">("products");
+  const [activeTab, setActiveTab] = useState<"overview" | "products" | "orders" | "reports">("products");
   const { toasts, addToast, removeToast } = useToast();
 
   // ─── Products State ─────────────────────────────────
@@ -216,6 +243,11 @@ export default function AdminPage() {
   const orderPageSize = 10;
   const [showOrderDetail, setShowOrderDetail] = useState<Order | null>(null);
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
+
+  // ─── Reports State ──────────────────────────────────
+  const [reports, setReports] = useState<ReportData | null>(null);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsError, setReportsError] = useState<string | null>(null);
 
   // ─── Fetch Products ─────────────────────────────────
   useEffect(() => {
@@ -294,8 +326,7 @@ export default function AdminPage() {
       if (orderStatusFilter !== "all") params.append("status", orderStatusFilter);
       if (orderSearch) params.append("search", orderSearch);
       
-// بدل /api/orders/all
-const response = await fetch(`/api/orders?all=true&${params.toString()}`);
+      const response = await fetch(`/api/orders?all=true&${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch orders");
       const data = await response.json();
       setOrders(data);
@@ -305,6 +336,29 @@ const response = await fetch(`/api/orders?all=true&${params.toString()}`);
       addToast(err.message, "error");
     } finally {
       setOrderLoading(false);
+    }
+  }
+
+  // ─── Fetch Reports ──────────────────────────────────
+  useEffect(() => {
+    if (activeTab === "reports") {
+      fetchReports();
+    }
+  }, [activeTab]);
+
+  async function fetchReports() {
+    try {
+      setReportsLoading(true);
+      const response = await fetch("/api/reports");
+      if (!response.ok) throw new Error("Failed to fetch reports");
+      const data = await response.json();
+      setReports(data);
+      setReportsError(null);
+    } catch (err: any) {
+      setReportsError(err.message);
+      addToast(err.message, "error");
+    } finally {
+      setReportsLoading(false);
     }
   }
 
@@ -486,7 +540,7 @@ const response = await fetch(`/api/orders?all=true&${params.toString()}`);
   ];
 
   // ─── Loading State ───────────────────────────────────
-  if (productLoading && products.length === 0 && activeTab !== "orders") {
+  if (productLoading && products.length === 0 && activeTab !== "orders" && activeTab !== "reports") {
     return (
       <div className="min-h-screen bg-luxe-surface flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -525,20 +579,25 @@ const response = await fetch(`/api/orders?all=true&${params.toString()}`);
 
       {/* Error Banner */}
       <AnimatePresence>
-        {(productError || orderError) && (
+        {(productError || orderError || reportsError) && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-luxe-error-container border border-luxe-error/20 rounded-lg p-4 flex items-center gap-3">
             <AlertTriangle className="size-5 text-luxe-error" />
-            <span className="text-luxe-on-error-container text-sm">{productError || orderError}</span>
-            <button onClick={() => { setProductError(null); setOrderError(null); }} className="ml-auto hover:bg-luxe-error/10 rounded p-1"><X className="size-4" /></button>
+            <span className="text-luxe-on-error-container text-sm">{productError || orderError || reportsError}</span>
+            <button onClick={() => { setProductError(null); setOrderError(null); setReportsError(null); }} className="ml-auto hover:bg-luxe-error/10 rounded p-1">
+              <X className="size-4" />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b border-luxe-outline-variant/20 pb-1">
-        <button onClick={() => setActiveTab("overview")} className={`pb-4 text-[14px] font-bold tracking-[0.05em] uppercase border-b-2 transition-all cursor-pointer ${activeTab === "overview" ? "border-luxe-primary text-luxe-primary" : "border-transparent text-luxe-on-surface-variant"}`}>Performance Overview</button>
-        <button onClick={() => setActiveTab("products")} className={`pb-4 text-[14px] font-bold tracking-[0.05em] uppercase border-b-2 transition-all cursor-pointer ${activeTab === "products" ? "border-luxe-primary text-luxe-primary" : "border-transparent text-luxe-on-surface-variant"}`}>Inventory Catalog ({products.length})</button>
-        <button onClick={() => setActiveTab("orders")} className={`pb-4 text-[14px] font-bold tracking-[0.05em] uppercase border-b-2 transition-all cursor-pointer ${activeTab === "orders" ? "border-luxe-primary text-luxe-primary" : "border-transparent text-luxe-on-surface-variant"}`}>Orders ({orders.length})</button>
+      <div className="flex gap-4 border-b border-luxe-outline-variant/20 pb-1 overflow-x-auto">
+        <button onClick={() => setActiveTab("overview")} className={`pb-4 text-[14px] font-bold tracking-[0.05em] uppercase border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "overview" ? "border-luxe-primary text-luxe-primary" : "border-transparent text-luxe-on-surface-variant"}`}>Performance Overview</button>
+        <button onClick={() => setActiveTab("products")} className={`pb-4 text-[14px] font-bold tracking-[0.05em] uppercase border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "products" ? "border-luxe-primary text-luxe-primary" : "border-transparent text-luxe-on-surface-variant"}`}>Inventory Catalog ({products.length})</button>
+        <button onClick={() => setActiveTab("orders")} className={`pb-4 text-[14px] font-bold tracking-[0.05em] uppercase border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "orders" ? "border-luxe-primary text-luxe-primary" : "border-transparent text-luxe-on-surface-variant"}`}>Orders ({orders.length})</button>
+        <button onClick={() => setActiveTab("reports")} className={`pb-4 text-[14px] font-bold tracking-[0.05em] uppercase border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "reports" ? "border-luxe-primary text-luxe-primary" : "border-transparent text-luxe-on-surface-variant"}`}>
+          <FileText className="size-4 inline mr-1" /> Reports
+        </button>
       </div>
 
       {/* ─── OVERVIEW TAB ───────────────────────────────── */}
@@ -552,15 +611,21 @@ const response = await fetch(`/api/orders?all=true&${params.toString()}`);
                   <Card className="glass-panel border-none shadow-sm rounded-xl p-6 flex flex-col justify-between h-44 hover:-translate-y-0.5 hover:shadow-md hover:scale-[1.01] transition-all">
                     <div className="flex justify-between items-start">
                       <span className="text-[12px] font-bold tracking-[0.05em] text-luxe-on-surface-variant uppercase">{metric.title}</span>
-                      <div className="size-8 rounded-lg bg-luxe-surface-container flex items-center justify-center text-luxe-primary"><MetricIcon className="size-4" /></div>
+                      <div className="size-8 rounded-lg bg-luxe-surface-container flex items-center justify-center text-luxe-primary">
+                        <MetricIcon className="size-4" />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <h3 className="text-[32px] font-bold text-luxe-on-surface tracking-tight">{metric.value}</h3>
                       <div className="flex items-center gap-1.5">
                         {metric.trend === "up" ? (
-                          <span className="text-[11px] bg-luxe-primary/10 text-luxe-primary px-2 py-0.5 rounded font-bold flex items-center gap-0.5"><TrendingUp className="size-3" /> Growth</span>
+                          <span className="text-[11px] bg-luxe-primary/10 text-luxe-primary px-2 py-0.5 rounded font-bold flex items-center gap-0.5">
+                            <TrendingUp className="size-3" /> Growth
+                          </span>
                         ) : (
-                          <span className="text-[11px] bg-luxe-error-container text-luxe-on-error-container px-2 py-0.5 rounded font-bold flex items-center gap-0.5 animate-pulse"><TrendingDown className="size-3" /> Shift</span>
+                          <span className="text-[11px] bg-luxe-error-container text-luxe-on-error-container px-2 py-0.5 rounded font-bold flex items-center gap-0.5 animate-pulse">
+                            <TrendingDown className="size-3" /> Shift
+                          </span>
                         )}
                         <span className="text-[11px] text-luxe-on-surface-variant/80">{metric.change}</span>
                       </div>
@@ -574,7 +639,9 @@ const response = await fetch(`/api/orders?all=true&${params.toString()}`);
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="glass-panel border-none shadow-sm rounded-xl p-6">
               <CardHeader className="px-0 pt-0 pb-4">
-                <CardTitle className="text-[18px] font-semibold text-luxe-on-surface flex items-center gap-2"><BarChart3 className="size-5 text-luxe-primary" /> Sales Trend</CardTitle>
+                <CardTitle className="text-[18px] font-semibold text-luxe-on-surface flex items-center gap-2">
+                  <BarChart3 className="size-5 text-luxe-primary" /> Sales Trend
+                </CardTitle>
               </CardHeader>
               <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -597,7 +664,9 @@ const response = await fetch(`/api/orders?all=true&${params.toString()}`);
 
             <Card className="glass-panel border-none shadow-sm rounded-xl p-6">
               <CardHeader className="px-0 pt-0 pb-4">
-                <CardTitle className="text-[18px] font-semibold text-luxe-on-surface flex items-center gap-2"><Package className="size-5 text-luxe-primary" /> Category Distribution</CardTitle>
+                <CardTitle className="text-[18px] font-semibold text-luxe-on-surface flex items-center gap-2">
+                  <Package className="size-5 text-luxe-primary" /> Category Distribution
+                </CardTitle>
               </CardHeader>
               <div className="h-[300px] w-full flex items-center justify-center">
                 {categoryData.length > 0 ? (
@@ -828,6 +897,234 @@ const response = await fetch(`/api/orders?all=true&${params.toString()}`);
             {!orderLoading && orders.length === 0 && <div className="text-center py-12 text-luxe-on-surface-variant">No orders found</div>}
           </CardContent>
         </Card>
+      )}
+
+      {/* ─── REPORTS TAB ─────────────────────────────────── */}
+      {activeTab === "reports" && (
+        <div className="space-y-8">
+          {/* Reports Loading */}
+          {reportsLoading && (
+            <div className="flex items-center justify-center py-20">
+              <div className="flex flex-col items-center gap-4">
+                <Loader2 className="size-10 text-luxe-primary animate-spin" />
+                <span className="text-luxe-on-surface-variant text-sm">Loading analytics...</span>
+              </div>
+            </div>
+          )}
+
+          {/* Reports Error */}
+          {reportsError && !reportsLoading && (
+            <div className="bg-luxe-error-container border border-luxe-error/20 rounded-lg p-6 text-center">
+              <AlertTriangle className="size-8 text-luxe-error mx-auto mb-2" />
+              <p className="text-luxe-on-error-container font-medium">{reportsError}</p>
+              <Button variant="outline" onClick={fetchReports} className="mt-4 border-luxe-outline-variant">
+                Retry
+              </Button>
+            </div>
+          )}
+
+          {/* Reports Content */}
+          {reports && !reportsLoading && (
+            <>
+              {/* Top Metrics */}
+              <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <motion.div variants={cascadeItem}>
+                  <Card className="glass-panel border-none shadow-sm rounded-xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-[12px] font-bold tracking-[0.05em] text-luxe-on-surface-variant uppercase">Total Orders</span>
+                      <div className="size-8 rounded-lg bg-luxe-primary/10 flex items-center justify-center text-luxe-primary">
+                        <ClipboardList className="size-4" />
+                      </div>
+                    </div>
+                    <h3 className="text-[32px] font-bold text-luxe-on-surface tracking-tight">{reports.totalOrders.toLocaleString()}</h3>
+                    <p className="text-[11px] text-luxe-on-surface-variant mt-1">Completed orders</p>
+                  </Card>
+                </motion.div>
+                <motion.div variants={cascadeItem}>
+                  <Card className="glass-panel border-none shadow-sm rounded-xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-[12px] font-bold tracking-[0.05em] text-luxe-on-surface-variant uppercase">Total Revenue</span>
+                      <div className="size-8 rounded-lg bg-luxe-primary/10 flex items-center justify-center text-luxe-primary">
+                        <DollarSign className="size-4" />
+                      </div>
+                    </div>
+                    <h3 className="text-[32px] font-bold text-luxe-primary tracking-tight">${Number(reports.totalRevenue).toLocaleString()}</h3>
+                    <p className="text-[11px] text-luxe-on-surface-variant mt-1">Lifetime revenue</p>
+                  </Card>
+                </motion.div>
+                <motion.div variants={cascadeItem}>
+                  <Card className="glass-panel border-none shadow-sm rounded-xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-[12px] font-bold tracking-[0.05em] text-luxe-on-surface-variant uppercase">Avg Order Value</span>
+                      <div className="size-8 rounded-lg bg-luxe-primary/10 flex items-center justify-center text-luxe-primary">
+                        <TrendingUp className="size-4" />
+                      </div>
+                    </div>
+                    <h3 className="text-[32px] font-bold text-luxe-on-surface tracking-tight">
+                      ${reports.totalOrders > 0 ? Math.round(reports.totalRevenue / reports.totalOrders).toLocaleString() : "0"}
+                    </h3>
+                    <p className="text-[11px] text-luxe-on-surface-variant mt-1">Per transaction</p>
+                  </Card>
+                </motion.div>
+              </motion.div>
+
+              {/* Charts Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Sales by Month */}
+                <Card className="glass-panel border-none shadow-sm rounded-xl p-6">
+                  <CardHeader className="px-0 pt-0 pb-4">
+                    <CardTitle className="text-[18px] font-semibold text-luxe-on-surface flex items-center gap-2">
+                      <BarChart3 className="size-5 text-luxe-primary" /> Sales by Month
+                    </CardTitle>
+                  </CardHeader>
+                  <div className="h-[300px] w-full">
+                    {reports.salesByMonth.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={reports.salesByMonth}>
+                          <defs>
+                            <linearGradient id="colorSalesReport" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#8884d8" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                          <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                          <YAxis tick={{ fontSize: 12 }} />
+                          <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
+                          <Area type="monotone" dataKey="sales" stroke="#8884d8" fillOpacity={1} fill="url(#colorSalesReport)" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-luxe-on-surface-variant text-sm">No sales data available</div>
+                    )}
+                  </div>
+                </Card>
+
+                {/* Category Revenue */}
+                <Card className="glass-panel border-none shadow-sm rounded-xl p-6">
+                  <CardHeader className="px-0 pt-0 pb-4">
+                    <CardTitle className="text-[18px] font-semibold text-luxe-on-surface flex items-center gap-2">
+                      <Package className="size-5 text-luxe-primary" /> Revenue by Category
+                    </CardTitle>
+                  </CardHeader>
+                  <div className="h-[300px] w-full flex items-center justify-center">
+                    {reports.categoryData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={reports.categoryData}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={100}
+                            dataKey="value"
+                            nameKey="name"
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          >
+                            {reports.categoryData.map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <span className="text-luxe-on-surface-variant text-sm">No category data</span>
+                    )}
+                  </div>
+                </Card>
+              </div>
+
+              {/* Tables Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Top Products */}
+                <Card className="glass-panel border-none shadow-sm rounded-xl overflow-hidden">
+                  <CardHeader className="border-b border-luxe-outline-variant/20 pb-4 p-6">
+                    <CardTitle className="text-[18px] font-semibold text-luxe-on-surface flex items-center gap-2">
+                      <Crown className="size-5 text-luxe-primary" /> Top Selling Products
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    {reports.topProducts.length > 0 ? (
+                      <table className="w-full text-[14px] text-left border-collapse">
+                        <thead>
+                          <tr className="bg-luxe-surface-container/50 border-b border-luxe-outline-variant/20 text-[11px] font-bold tracking-[0.05em] text-luxe-on-surface-variant uppercase">
+                            <th className="py-4 px-6">Product</th>
+                            <th className="py-4 px-6 text-center">Qty Sold</th>
+                            <th className="py-4 px-6 text-right">Revenue</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {reports.topProducts.map((product, idx) => (
+                            <tr key={product.id} className="border-b border-luxe-outline-variant/10 hover:bg-luxe-surface-container/10 transition-colors">
+                              <td className="py-4 px-6">
+                                <div className="flex items-center gap-3">
+                                  <div className="size-8 rounded-full bg-luxe-primary/10 flex items-center justify-center text-[11px] font-bold text-luxe-primary">
+                                    {idx + 1}
+                                  </div>
+                                  <span className="font-semibold text-luxe-on-surface">{product.name}</span>
+                                </div>
+                              </td>
+                              <td className="py-4 px-6 text-center text-luxe-on-surface-variant">{product.quantity}</td>
+                              <td className="py-4 px-6 text-right text-luxe-primary font-semibold">${Number(product.revenue).toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <div className="text-center py-12 text-luxe-on-surface-variant">No product sales data</div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Top Customers */}
+                <Card className="glass-panel border-none shadow-sm rounded-xl overflow-hidden">
+                  <CardHeader className="border-b border-luxe-outline-variant/20 pb-4 p-6">
+                    <CardTitle className="text-[18px] font-semibold text-luxe-on-surface flex items-center gap-2">
+                      <Star className="size-5 text-luxe-primary" /> Top Customers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    {reports.topCustomers.length > 0 ? (
+                      <table className="w-full text-[14px] text-left border-collapse">
+                        <thead>
+                          <tr className="bg-luxe-surface-container/50 border-b border-luxe-outline-variant/20 text-[11px] font-bold tracking-[0.05em] text-luxe-on-surface-variant uppercase">
+                            <th className="py-4 px-6">Customer</th>
+                            <th className="py-4 px-6 text-center">Orders</th>
+                            <th className="py-4 px-6 text-right">Total Spent</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {reports.topCustomers.map((customer, idx) => (
+                            <tr key={customer.id} className="border-b border-luxe-outline-variant/10 hover:bg-luxe-surface-container/10 transition-colors">
+                              <td className="py-4 px-6">
+                                <div className="flex items-center gap-3">
+                                  <div className="size-8 rounded-full bg-luxe-primary/10 flex items-center justify-center text-[11px] font-bold text-luxe-primary">
+                                    {idx + 1}
+                                  </div>
+                                  <div>
+                                    <p className="font-semibold text-luxe-on-surface">{customer.name}</p>
+                                    <p className="text-[11px] text-luxe-on-surface-variant">{customer.email}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-4 px-6 text-center">
+                                <Badge className="bg-luxe-primary/10 text-luxe-primary text-[10px]">{customer.ordersCount}</Badge>
+                              </td>
+                              <td className="py-4 px-6 text-right text-luxe-primary font-semibold">${Number(customer.totalSpent).toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <div className="text-center py-12 text-luxe-on-surface-variant">No customer data</div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          )}
+        </div>
       )}
 
       {/* ─── ORDER DETAIL MODAL ──────────────────────────── */}
