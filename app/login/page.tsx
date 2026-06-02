@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { MagicCard } from "@/components/magicui/magic-card";
+import { Meteors } from "@/components/magicui/meteors";
 import { Eye, EyeOff, Lock, Mail, ArrowRight, ShieldCheck } from "lucide-react";
 
 export default function LoginPage() {
@@ -43,6 +44,9 @@ export default function LoginPage() {
     <main className="min-h-screen bg-luxe-surface flex flex-col md:flex-row relative overflow-hidden">
       {/* Visual Ambient Left Column (Art-directed editorial) */}
       <div className="hidden md:flex md:w-1/2 relative bg-luxe-inverse-surface text-luxe-inverse-on-surface flex-col justify-between p-16 overflow-hidden">
+        {/* Magic UI Meteors Background */}
+        <Meteors number={35} className="opacity-35" />
+
         {/* Soft floating background glows */}
         <div className="absolute top-[-10%] left-[-10%] w-[80%] h-[80%] rounded-full bg-luxe-primary/10 blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[-15%] right-[-10%] w-[70%] h-[70%] rounded-full bg-luxe-tertiary/15 blur-[100px] pointer-events-none" />
@@ -80,22 +84,27 @@ export default function LoginPage() {
         <div className="absolute md:hidden top-1/4 left-1/4 w-64 h-64 rounded-full bg-luxe-primary/10 blur-[80px] pointer-events-none" />
 
         <div className="w-full max-w-[460px] z-10">
-          <Card className="glass-panel border-none shadow-xl rounded-2xl relative overflow-hidden transition-all duration-300 hover:shadow-2xl">
+          {/* Replace Card layout with spotlight MagicCard */}
+          <MagicCard
+            glowColor="rgba(79, 70, 229, 0.05)"
+            borderColor="rgba(79, 70, 229, 0.15)"
+            className="p-8 rounded-2xl relative overflow-hidden bg-white/70 dark:bg-luxe-inverse-surface/70 shadow-xl border border-luxe-outline-variant/15 flex flex-col justify-between"
+          >
             {/* Top decorative stripe */}
             <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-luxe-primary via-luxe-tertiary to-luxe-primary" />
 
-            <CardHeader className="space-y-2 pt-8">
-              <CardTitle className="text-[28px] font-semibold text-luxe-on-surface tracking-tight">
-                Sign In
-              </CardTitle>
-              <CardDescription className="text-luxe-on-surface-variant text-[14px]">
-                Access your private portfolio and curated luxury account.
-              </CardDescription>
-            </CardHeader>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h2 className="text-[28px] font-semibold text-luxe-on-surface tracking-tight">
+                  Sign In
+                </h2>
+                <p className="text-luxe-on-surface-variant text-[14px]">
+                  Access your private portfolio and curated luxury account.
+                </p>
+              </div>
 
-            <CardContent>
               {error && (
-                <div className="mb-6 p-4 rounded-lg bg-luxe-error-container text-luxe-on-error-container text-[13px] border border-luxe-error/20 flex items-center gap-2.5 animate-pulse">
+                <div className="p-4 rounded-lg bg-luxe-error-container text-luxe-on-error-container text-[13px] border border-luxe-error/20 flex items-center gap-2.5 animate-pulse">
                   <ShieldCheck className="size-4 shrink-0 text-luxe-error" />
                   <span>{error}</span>
                 </div>
@@ -104,7 +113,7 @@ export default function LoginPage() {
               <form onSubmit={handleLogin} className="space-y-5">
                 {/* Email Input */}
                 <div className="space-y-2">
-                  <label htmlFor="login-email" className="text-[12px] font-semibold text-luxe-on-surface-variant tracking-[0.05em] uppercase block">
+                  <label htmlFor="login-email" className="text-[11px] font-semibold text-luxe-on-surface-variant tracking-[0.05em] uppercase block">
                     Email Address
                   </label>
                   <div className="relative">
@@ -124,7 +133,7 @@ export default function LoginPage() {
                 {/* Password Input */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <label htmlFor="login-password" className="text-[12px] font-semibold text-luxe-on-surface-variant tracking-[0.05em] uppercase block">
+                    <label htmlFor="login-password" className="text-[11px] font-semibold text-luxe-on-surface-variant tracking-[0.05em] uppercase block">
                       Password
                     </label>
                     <Link
@@ -172,10 +181,10 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-luxe-primary text-luxe-on-primary py-6 rounded-lg text-[14px] font-semibold tracking-wider hover:bg-luxe-primary/95 transition-all duration-300 mt-2 hover:-translate-y-0.5 active:translate-y-0 shadow-md shadow-luxe-primary/10 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full bg-luxe-primary text-luxe-on-primary py-6 rounded-lg text-[14px] font-semibold tracking-wider hover:bg-luxe-primary/95 transition-all duration-300 mt-2 hover:-translate-y-0.5 active:translate-y-0 shadow-md shadow-luxe-primary/10 flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden group/btn after:content-[''] after:absolute after:inset-y-0 after:left-[-100%] after:w-full after:bg-gradient-to-r after:from-transparent after:via-white/20 after:to-transparent after:skew-x-[25deg] after:transition-transform after:duration-[0.8s] hover:after:translate-x-[150%]"
                 >
                   {loading ? "AUTHENTICATING..." : "ENTER PORTFOLIO"}
-                  {!loading && <ArrowRight className="size-4 transition-transform group-hover/button:translate-x-1" />}
+                  {!loading && <ArrowRight className="size-4" />}
                 </Button>
               </form>
 
@@ -195,19 +204,19 @@ export default function LoginPage() {
                     onClick={() => fillCredentials("admin")}
                     className="flex-1 text-[11px] font-semibold bg-luxe-surface-container hover:bg-luxe-surface-container-high text-luxe-on-surface-variant py-2.5 px-3 rounded-md transition-colors border border-luxe-outline-variant/30 cursor-pointer"
                   >
-                    Site Administrator
+                    Administrator
                   </button>
                 </div>
               </div>
-            </CardContent>
+            </div>
 
-            <CardFooter className="bg-luxe-surface-container-low border-t border-luxe-outline-variant/20 py-4 px-6 flex justify-center text-[13px] text-luxe-on-surface-variant">
+            <div className="mt-6 pt-4 border-t border-luxe-outline-variant/20 flex justify-center text-[13px] text-luxe-on-surface-variant">
               <span>New to Luxe? </span>
               <Link href="/signup" className="text-luxe-primary font-bold hover:underline ml-1">
                 Request Invitation
               </Link>
-            </CardFooter>
-          </Card>
+            </div>
+          </MagicCard>
         </div>
       </div>
     </main>

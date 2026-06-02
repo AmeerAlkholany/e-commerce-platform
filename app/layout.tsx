@@ -4,6 +4,8 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { ClickSpark } from "@/components/magicui/click-spark";
+import { LenisProvider } from "@/components/lenis-provider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -14,17 +16,17 @@ export const metadata: Metadata = {
 };
 
 const navLinks = [
-  { label: "NEW IN", href: "/new", isActive: true },
-  { label: "COLLECTIONS", href: "/collections" },
-  { label: "DESIGNERS", href: "/designers" },
+  { label: "NEW IN", href: "/products", isActive: true },
+  { label: "COLLECTIONS", href: "/products?category=Fashion" },
+  { label: "DESIGNERS", href: "/products" },
   { label: "ABOUT", href: "/about" },
 ];
 
 const quickLinks = [
-  { label: "New Arrivals", href: "/new" },
-  { label: "Best Sellers", href: "/best-sellers" },
-  { label: "Collections", href: "/collections" },
-  { label: "Gift Guide", href: "/gifts" },
+  { label: "New Arrivals", href: "/products" },
+  { label: "Best Sellers", href: "/products" },
+  { label: "Collections", href: "/products" },
+  { label: "Gift Guide", href: "/products" },
 ];
 
 const legalLinks = [
@@ -42,10 +44,21 @@ export default function RootLayout({
       lang="en"
       className={cn("h-full antialiased font-sans", inter.variable)}
     >
-      <body className="min-h-full flex flex-col">
-        <Navbar links={navLinks} cartCount={2} />
-        <main className="flex-1">{children}</main>
-        <Footer quickLinks={quickLinks} legalLinks={legalLinks} />
+      <body className="min-h-full flex flex-col bg-background text-foreground">
+        <ClickSpark
+          sparkColor1="#AFFF00"
+          sparkColor2="#00d4ff"
+          sparkSize={10}
+          sparkRadius={22}
+          sparkCount={8}
+          duration={400}
+        >
+          <LenisProvider>
+            <Navbar links={navLinks} cartCount={2} />
+            <main className="flex-1">{children}</main>
+            <Footer quickLinks={quickLinks} legalLinks={legalLinks} />
+          </LenisProvider>
+        </ClickSpark>
       </body>
     </html>
   );

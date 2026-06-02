@@ -1,131 +1,302 @@
-"use client";
+"use client"
 
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion"
+import { useRef } from "react"
+import Image from "next/image"
+import { Particles } from "@/components/ui/particles"
 
-export interface HeroSectionProps {
-  subtitle: string;
-  title: string;
-  description: string;
-  primaryCta: { label: string; href: string };
-  secondaryCta: { label: string; href: string };
-  imageSrc: string;
-  imageAlt: string;
+const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 }
+
+const fadeUpVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.1,
+      duration: 0.8,
+      ease: [0.25, 0.4, 0.25, 1],
+    },
+  }),
+}
+
+const scaleInVariants = {
+  hidden: { opacity: 0, scale: 0.8, rotate: -10 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    rotate: 0,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 20,
+      delay: 0.3,
+    },
+  },
+}
+
+interface HeroSectionProps {
+  subtitle?: string
+  titleLine1?: string
+  titleLine2?: string
+  description?: string
+  primaryCta?: { label: string; href: string }
+  secondaryCta?: { label: string; href: string }
+  imageSrc?: string
+  imageAlt?: string
 }
 
 export function HeroSection({
-  subtitle,
-  title,
-  description,
-  primaryCta,
-  secondaryCta,
-  imageSrc,
-  imageAlt,
+  subtitle = "BETTER-FOR-YOU ENERGY DRINK",
+  titleLine1 = "FUEL YOUR",
+  titleLine2 = "AMBITION",
+  description = "Zero sugar. Natural flavors. Clean energy that hits different.",
+  primaryCta = { label: "Sign Up & Save 25%", href: "/signup" },
+  secondaryCta = { label: "Explore Flavours", href: "/products" },
+  imageSrc = "/images/drink2.png",
+  imageAlt = "GiGi Energy Drink - Lemon Lime Flavour",
 }: HeroSectionProps) {
-  // Container variant to stagger children animations
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.2,
-      },
-    },
-  };
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  })
 
-  // Upward slide and fade variants
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 70,
-        damping: 15,
-      },
-    },
-  };
+  const rawY = useTransform(scrollYProgress, [0, 1], [0, 200])
+  const y = useSpring(rawY, springConfig)
+
+  const rawTextX1 = useTransform(scrollYProgress, [0, 1], [0, -100])
+  const textX1 = useSpring(rawTextX1, springConfig)
+
+  const rawTextX2 = useTransform(scrollYProgress, [0, 1], [0, 100])
+  const textX2 = useSpring(rawTextX2, springConfig)
+
+  const rawScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9])
+  const scale = useSpring(rawScale, springConfig)
+
+  const rawOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
+  const opacity = useSpring(rawOpacity, springConfig)
 
   return (
-    <section className="relative h-[870px] w-full overflow-hidden bg-luxe-surface-dim group">
-      {/* Background Image with elegant slow loading zoom */}
+    <section
+      id="hero"
+      ref={ref}
+      className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-background noise-overlay"
+    >
+      {/* Subtle gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-background" />
+
+      {/* Interactive particle field */}
+      <Particles
+        className="absolute inset-0"
+        quantity={80}
+        staticity={40}
+        ease={60}
+        size={0.5}
+        color="#AFFF00"
+        vx={0.05}
+        vy={-0.02}
+      />
+
       <motion.div
-        initial={{ scale: 1.08, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 2.2, ease: "easeOut" }}
-        className="absolute inset-0 w-full h-full"
-      >
-        <Image
-          src={imageSrc}
-          alt={imageAlt}
-          fill
-          sizes="100vw"
-          priority={true}
-          className="object-cover transition-transform duration-1000 group-hover:scale-105"
-        />
-      </motion.div>
+        className="absolute top-20 left-10 w-24 h-24 rounded-full bg-primary/20 blur-3xl"
+        animate={{
+          x: [0, 30, 0],
+          y: [0, -20, 0],
+          scale: [1, 1.1, 1],
+        }}
+        transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute bottom-40 right-20 w-32 h-32 rounded-full bg-primary/10 blur-3xl"
+        animate={{
+          x: [0, -40, 0],
+          y: [0, 30, 0],
+          scale: [1, 1.2, 1],
+        }}
+        transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+      />
 
-      {/* Modern Luxury Ambient Gradient Overlay */}
-      <div className="absolute inset-0 hero-gradient z-10" />
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-12 w-full">
+        <div className="grid lg:grid-cols-2 gap-8 items-center">
+          {/* Text Content */}
+          <motion.div style={{ opacity }} className="space-y-5">
+            <motion.div
+              variants={fadeUpVariants}
+              initial="hidden"
+              animate="visible"
+              custom={0}
+              className="inline-flex items-center gap-2 bg-foreground text-background px-3 py-1.5 rounded-full text-xs font-mono tracking-wider"
+            >
+              <motion.span
+                className="w-2 h-2 bg-primary rounded-full"
+                animate={{ scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }}
+                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+              />
+              {subtitle}
+            </motion.div>
 
-      {/* Content Container */}
-      <div className="relative h-full max-w-[1440px] mx-auto px-4 md:px-[64px] flex flex-col justify-end pb-20 z-20">
+            <div className="space-y-1 overflow-hidden">
+              <motion.h1
+                style={{ x: textX1 }}
+                className="text-5xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.9]"
+              >
+                <motion.span
+                  variants={fadeUpVariants}
+                  initial="hidden"
+                  animate="visible"
+                  custom={1}
+                  className="inline-block"
+                >
+                  {titleLine1}
+                </motion.span>
+              </motion.h1>
+              <motion.h1
+                style={{ x: textX2 }}
+                className="text-5xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.9]"
+              >
+                <motion.span
+                  variants={fadeUpVariants}
+                  initial="hidden"
+                  animate="visible"
+                  custom={2}
+                  className="inline-block text-primary"
+                >
+                  {titleLine2}
+                </motion.span>
+              </motion.h1>
+              <motion.p
+                variants={fadeUpVariants}
+                initial="hidden"
+                animate="visible"
+                custom={3}
+                className="text-lg md:text-xl font-mono text-foreground/60 tracking-tight pt-2 max-w-md"
+              >
+                {description}
+              </motion.p>
+            </div>
+
+            <motion.div
+              variants={fadeUpVariants}
+              initial="hidden"
+              animate="visible"
+              custom={4}
+              className="flex flex-wrap gap-3 pt-2"
+            >
+              <motion.a
+                href={primaryCta.href}
+                className="bg-primary text-primary-foreground px-6 py-3 rounded-full font-bold text-sm tracking-wide flex items-center gap-2 group relative overflow-hidden cursor-pointer"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full"
+                  whileHover={{ x: "200%" }}
+                  transition={{ duration: 0.6 }}
+                />
+                <span className="relative z-10">{primaryCta.label}</span>
+                <motion.svg
+                  className="w-4 h-4 relative z-10"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  initial={{ x: 0 }}
+                  whileHover={{ x: 4 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </motion.svg>
+              </motion.a>
+              
+              <motion.a
+                href={secondaryCta.href}
+                className="border-2 border-foreground text-foreground px-6 py-3 rounded-full font-bold text-sm tracking-wide relative overflow-hidden cursor-pointer flex items-center justify-center"
+                whileHover={{ scale: 1.02, backgroundColor: "var(--foreground)", color: "var(--background)" }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                {secondaryCta.label}
+              </motion.a>
+            </motion.div>
+
+            <motion.div
+              variants={fadeUpVariants}
+              initial="hidden"
+              animate="visible"
+              custom={5}
+              className="flex flex-wrap gap-4 pt-2"
+            >
+              {["Zero Sugar", "75mg Caffeine", "Natural Flavours", "Vitamin B Rich"].map((benefit, i) => (
+                <motion.div
+                  key={benefit}
+                  className="flex items-center gap-2 text-xs font-mono text-foreground/60"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8 + i * 0.1 }}
+                >
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                  {benefit}
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+
+          <motion.div style={{ y, scale }} className="relative flex justify-center">
+            <motion.div variants={scaleInVariants} initial="hidden" animate="visible" className="relative">
+              <motion.div
+                className="absolute inset-0 bg-primary/30 blur-[80px] rounded-full scale-75"
+                animate={{
+                  scale: [0.75, 0.85, 0.75],
+                  opacity: [0.3, 0.5, 0.3],
+                }}
+                transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+              />
+
+              <motion.div
+                animate={{
+                  y: [0, -15, 0],
+                  rotate: [0, 2, 0],
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "easeInOut",
+                }}
+              >
+                <Image
+                  src={imageSrc}
+                  alt={imageAlt}
+                  width={350}
+                  height={525}
+                  className="relative z-10 drop-shadow-2xl object-contain"
+                  priority
+                />
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </div>
+
         <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="max-w-2xl text-white"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5, duration: 0.8 }}
         >
-          {/* Tags / Subtitle */}
-          <motion.span
-            variants={itemVariants}
-            className="text-[14px] font-bold leading-[1.4] tracking-[0.25em] text-luxe-primary-fixed-dim mb-6 block uppercase"
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
           >
-            {subtitle}
-          </motion.span>
-
-          {/* Heading with spring y-slide */}
-          <motion.h1
-            variants={itemVariants}
-            className="text-[44px] md:text-[68px] font-light leading-[1.05] tracking-tight mb-6"
-          >
-            {title.split(" ").map((word, idx) => (
-              <span key={idx} className={idx === 1 ? "italic font-normal text-luxe-primary-fixed-dim" : "font-light"}>
-                {word}{" "}
-              </span>
-            ))}
-          </motion.h1>
-
-          {/* Description */}
-          <motion.p
-            variants={itemVariants}
-            className="text-[18px] leading-[1.7] mb-12 opacity-85 font-light"
-          >
-            {description}
-          </motion.p>
-
-          {/* Spring-activated CTA buttons */}
-          <motion.div variants={itemVariants} className="flex gap-6 flex-wrap">
-            <Button
-              asChild
-              className="bg-luxe-primary text-luxe-on-primary px-12 py-6 rounded-lg text-[14px] font-semibold tracking-wider hover:-translate-y-[3px] transition-all duration-300 shadow-xl shadow-luxe-primary/20 h-auto cursor-pointer"
-            >
-              <Link href={primaryCta.href}>{primaryCta.label}</Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="glass-panel text-white hover:text-luxe-on-surface px-12 py-6 rounded-lg text-[14px] font-semibold tracking-wider hover:bg-luxe-surface transition-all duration-300 h-auto border-none cursor-pointer"
-            >
-              <Link href={secondaryCta.href}>{secondaryCta.label}</Link>
-            </Button>
+            <div className="w-5 h-8 border-2 border-foreground/30 rounded-full flex justify-center pt-1.5">
+              <motion.div
+                className="w-1 h-2 bg-foreground/30 rounded-full"
+                animate={{ y: [0, 6, 0], opacity: [1, 0.5, 1] }}
+                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+              />
+            </div>
           </motion.div>
         </motion.div>
       </div>
     </section>
-  );
+  )
 }
