@@ -7,8 +7,8 @@ export function serializeBigInt(obj: any): any {
     return obj.toString();
   }
   if (typeof obj === 'object') {
-    // If it's a Prisma Decimal (has a toString method and is not a plain object/array we want to skip)
-    if (obj.constructor?.name === 'Decimal') {
+    // If it's a Prisma Decimal (has a toNumber method and d/s decimal.js properties)
+    if (obj.constructor?.name === 'Decimal' || (typeof obj.toNumber === 'function' && obj.d !== undefined)) {
       return obj.toNumber();
     }
     
