@@ -1,102 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { ChevronDown, SlidersHorizontal, Grid, List, X, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
-// Local static products list representing a fully populated premium catalogue
-const ALL_PRODUCTS = [
-  {
-    id: 1,
-    brand: "LUXE TIMEPIECES",
-    name: "The Horizon Chronograph",
-    price: 1250,
-    category: "Timepieces",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXufWm6FbZJ8NWggI_uqTag4zyANYjc7GViyC4Dix3RLWJl2EEJoAJxveBSIpSVpZAFWRaoRK47sm3UgppFeOI8u7kPJnzYKzFfHNMV1gotzHdSK_zCWWDLYEqJXpzeHFtAzZfzjRp6cisxyCQJo87IyM3ajdOiaDsDXFs08IuwM5xwEB2AaQlYsQwefDQG1ZlHuT4W-hkN_6eQA7_Al9Sz-omX5mL5pXvL6AgDOrx-aqF9xpJYEB4ydBeyki7cT4mzVd5S8aeHt44hb",
-    imageAlt: "A high-end luxury watch with a leather strap displayed on a dark, reflective surface.",
-    badge: "FEATURED",
-  },
-  {
-    id: 2,
-    brand: "LEATHER GOODS",
-    name: "Crescent Atelier Bag",
-    price: 890,
-    category: "Fashion",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCOM0EDAPsFT6d6b-3s34TmLFwuQD4xeltVY2xAajVxdwLUtdI1hqRig2hmkTqFf2VjRtD3tm6VHF71biuhlBDKtrUwCEInA55tAlTvPANnk0zuggrB-Hg4G42sAqGLs0agJSFESbgpl7sk4fwPg7hXa0BwjsNn_mWeisdFl81lx1B0mIs61_s-HA3luRjzHVDeOx5O9tBR32yBZ9xMiM5kzyQuoD9tqktxQjq-Co5bQ6v2UjarlJQotbIPjuq8-v7u-MeOEA0OM7qK",
-    imageAlt: "A sleek, designer leather handbag in a muted earth tone, photographed against a minimalist architectural background.",
-    badge: "LIMITED",
-  },
-  {
-    id: 3,
-    brand: "ACTIVE TECH",
-    name: "Pulse Smart Bracelet",
-    price: 420,
-    category: "Electronics",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCYuC-9bVEubhEvvo2Powvh29JmhA_ExfYvE76CstI-94URj9ud_froQLblqVk9DyN4DEju5GnK7yM5bX41eZ1fush0wvciFMquNGNSoyTwsJIKAIH3gI04lhy1vb1PeW-7MXsDH_ZH2sFnAdjk4ktRNFWX249IVEVAg1FND0EpWe0HrINYTtbji8eL2VQrlptANgC2maROBPm-k84lN3OM67G4yrvvdVZpjIlLDDQc7jYtwu7KKI_PeLG8WFWmtxIgX7UiFOpcBrDI",
-    imageAlt: "A premium minimalist smartwatch featuring a clean white band and a high-resolution glass display.",
-  },
-  {
-    id: 4,
-    brand: "COLLECTIONS",
-    name: "Silk Minimalist Blouse",
-    price: 350,
-    category: "Fashion",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuC56yEybdfcEBXD8wnBDrr0--z70us3KsV6MeQNgOCnkvpwMhS0QeAOrb9Jb2fc0wa38R2uz-yUTjY46VrFstXWb8zFZlstb01eM6140tUF7AIIPxv3Z-G-yp2WmhUYE7x1xZRC2GsBCGHVoByOstTfhTClb8tr-0ZkxkWWzLXNsSDfRgvfnmlTNhNJGtpf1kdo8-9tKRx0vqGcFUl2iFWk2L91inA5yhA73yUzGLRonXo9TOtVZwZQk3fcOZ9EE397KSDlwTIqZ9Qa",
-    imageAlt: "A curated arrangement of high-end fashion apparel, featuring a premium silk blouse and tailored trousers in soft cream colors.",
-  },
-  {
-    id: 5,
-    brand: "LIVING STUDIO",
-    name: "Travertine Sculptural Vessel",
-    price: 280,
-    category: "Home Decor",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBewA7jgwZvc-ygXhQFIB9niS9eVf_LoDU0tKxkp6V9peGVk9W5jWMNCO5pXZ1A5jFkZ-MD_rEfNcTq_5Tbcu2xku9KXKo-WU5DBAJ0377yRa3M_gG8mjk5yW_bhLw9f-zPaR9UEkhrcutAzpvCCWp4RgxhEPVOlMksSOKhhRlC3KzPqDOfYEbepQiG-qMz8mHSV9BSFhf5FJuFXjAemxf5qUVhWwsr0FteQomDUcaJrEzNGM4loay9SBzfontYizsE05Yvt8TrnuJc",
-    imageAlt: "A luxury sculptural stone vase.",
-    badge: "BESTSELLER",
-  },
-  {
-    id: 6,
-    brand: "SOUND LAB",
-    name: "Aero Over-Ear Headphones",
-    price: 650,
-    category: "Electronics",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuA6EFBnL-I3-jkKy3s1J7WqdZOteqgahWi2937kmzFzAGz4QVBRgqMskFdS00ft7LCd08r_6sLZI-rm0naLoYe_4iFYbVgSr9QhARtSgu1zNykqbkdox1UQ5Ja_SVVvvuq4Q1WcDzYmWroCCuWKTQMF_O1bT1P3yaBDjJPMS9fW_nrBT_cUzpCpTNyCrdB5aGbzHceRsSwE5V69zJPswy6vcrARyzOH8G2WsWL-F652QscEJEEcAtwbdrhRZ5qGH6363fCcb9MJaNRj",
-    imageAlt: "Over-ear luxury audio headphones.",
-  },
-  {
-    id: 7,
-    brand: "LEATHER GOODS",
-    name: "Atelier Travel Wallet",
-    price: 320,
-    category: "Fashion",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCOM0EDAPsFT6d6b-3s34TmLFwuQD4xeltVY2xAajVxdwLUtdI1hqRig2hmkTqFf2VjRtD3tm6VHF71biuhlBDKtrUwCEInA55tAlTvPANnk0zuggrB-Hg4G42sAqGLs0agJSFESbgpl7sk4fwPg7hXa0BwjsNn_mWeisdFl81lx1B0mIs61_s-HA3luRjzHVDeOx5O9tBR32yBZ9xMiM5kzyQuoD9tqktxQjq-Co5bQ6v2UjarlJQotbIPjuq8-v7u-MeOEA0OM7qK",
-    imageAlt: "A fine leather card wallet.",
-    badge: "NEW ARRIVAL",
-  },
-  {
-    id: 8,
-    brand: "LUXE TIMEPIECES",
-    name: "The Meridian Skeleton Automatic",
-    price: 2450,
-    category: "Timepieces",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXufWm6FbZJ8NWggI_uqTag4zyANYjc7GViyC4Dix3RLWJl2EEJoAJxveBSIpSVpZAFWRaoRK47sm3UgppFeOI8u7kPJnzYKzFfHNMV1gotzHdSK_zCWWDLYEqJXpzeHFtAzZfzjRp6cisxyCQJo87IyM3ajdOiaDsDXFs08IuwM5xwEB2AaQlYsQwefDQG1ZlHuT4W-hkN_6eQA7_Al9Sz-omX5mL5pXvL6AgDOrx-aqF9xpJYEB4ydBeyki7cT4mzVd5S8aeHt44hb",
-    imageAlt: "A highly complex luxury automatic watch showing moving parts.",
-    badge: "LIMITED",
-  },
-];
+interface Category {
+  id: number;
+  name: string;
+}
 
-const CATEGORIES = ["All", "Fashion", "Electronics", "Home Decor", "Timepieces"];
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number | string;
+  stock: number;
+  image_url: string;
+  category_id: number;
+  categories: Category;
+}
+
 const SORT_OPTIONS = [
   { label: "Featured First", value: "featured" },
   { label: "Price: Low to High", value: "price_asc" },
@@ -105,25 +31,55 @@ const SORT_OPTIONS = [
 ];
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("featured");
   const [priceRange, setPriceRange] = useState(2500);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [productsRes, categoriesRes] = await Promise.all([
+          fetch("/api/products"),
+          fetch("/api/categories")
+        ]);
+        
+        const productsData = await productsRes.json();
+        const categoriesData = await categoriesRes.json();
+        
+        setProducts(productsData);
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error("Failed to fetch products or categories:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const categoryNames = ["All", ...categories.map(c => c.name)];
+
   // Filter products
-  const filteredProducts = ALL_PRODUCTS.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     const matchesCategory =
-      selectedCategory === "All" || product.category === selectedCategory;
-    const matchesPrice = product.price <= priceRange;
+      selectedCategory === "All" || product.categories?.name === selectedCategory;
+    const matchesPrice = Number(product.price) <= priceRange;
     return matchesCategory && matchesPrice;
   });
 
   // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortBy === "price_asc") return a.price - b.price;
-    if (sortBy === "price_desc") return b.price - a.price;
+    const priceA = Number(a.price);
+    const priceB = Number(b.price);
+    if (sortBy === "price_asc") return priceA - priceB;
+    if (sortBy === "price_desc") return priceB - priceA;
     if (sortBy === "alpha_asc") return a.name.localeCompare(b.name);
-    // 'featured' defaults to order in original list (featured first has badges)
+    // 'featured' defaults to order in original list
     return a.id - b.id;
   });
 
@@ -177,7 +133,7 @@ export default function ProductsPage() {
             <div className="space-y-4">
               <h4 className="text-[12px] font-bold tracking-[0.05em] text-luxe-on-surface-variant uppercase">Category</h4>
               <div className="flex flex-col gap-2.5">
-                {CATEGORIES.map((cat) => (
+                {categoryNames.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
@@ -288,20 +244,27 @@ export default function ProductsPage() {
             )}
 
             {/* Products Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {sortedProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  brand={product.brand}
-                  name={product.name}
-                  price={`$${product.price.toLocaleString()}`}
-                  imageSrc={product.imageSrc}
-                  imageAlt={product.imageAlt}
-                  badge={product.badge}
-                  href={`/products/${product.id}`}
-                />
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="aspect-[3/4] bg-luxe-outline-variant/10 animate-pulse rounded-2xl" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {sortedProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    brand={product.categories?.name || "LUXE"}
+                    name={product.name}
+                    price={`$${Number(product.price).toLocaleString()}`}
+                    imageSrc={product.image_url || "/placeholder.jpg"}
+                    imageAlt={product.name}
+                    href={`/products/${product.id}`}
+                  />
+                ))}
+              </div>
+            )}
 
           </div>
         </div>
@@ -324,7 +287,7 @@ export default function ProductsPage() {
               <div className="space-y-4">
                 <h4 className="text-[12px] font-bold tracking-[0.05em] text-luxe-on-surface-variant uppercase">Category</h4>
                 <div className="flex flex-col gap-2.5">
-                  {CATEGORIES.map((cat) => (
+                  {categoryNames.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => {

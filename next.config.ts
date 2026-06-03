@@ -27,6 +27,7 @@ try {
 
 const nextConfig: NextConfig = {
   images: {
+    domains: ["h1.nu", "shorturl.at", "", "localhost"],
     remotePatterns: [
       {
         protocol: "https",
