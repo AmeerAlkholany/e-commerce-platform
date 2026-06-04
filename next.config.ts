@@ -27,7 +27,7 @@ try {
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["h1.nu", "shorturl.at", "", "localhost"],
+    domains: ["h1.nu", "shorturl.at", "", "localhost", "jjgctnagyrjterimtzxz.supabase.co", "supabase.co/"],
     remotePatterns: [
       {
         protocol: "https",

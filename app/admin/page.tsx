@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +53,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import { cn } from "@/lib/utils";
 
 // ─── Types ─────────────────────────────────────────────
 interface Product {
@@ -183,8 +185,8 @@ function StockBadge({ stock }: { stock: number }) {
     status === "In Stock"
       ? "bg-luxe-primary/10 text-luxe-primary"
       : status === "Low Stock"
-      ? "bg-luxe-tertiary-fixed text-luxe-tertiary"
-      : "bg-luxe-error-container text-luxe-on-error-container";
+        ? "bg-luxe-tertiary-fixed text-luxe-tertiary"
+        : "bg-luxe-error-container text-luxe-on-error-container";
   return (
     <Badge className={`text-[10px] font-bold uppercase py-0.5 px-2 rounded-md ${classes}`}>
       {status}
@@ -232,6 +234,9 @@ export default function AdminPage() {
   const [addForm, setAddForm] = useState({ name: "", description: "", price: "", stock: "", category_id: "", image_url: "" });
   const [addingProduct, setAddingProduct] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ─── Orders State ───────────────────────────────────
   const [orders, setOrders] = useState<Order[]>([]);
@@ -325,7 +330,7 @@ export default function AdminPage() {
       const params = new URLSearchParams();
       if (orderStatusFilter !== "all") params.append("status", orderStatusFilter);
       if (orderSearch) params.append("search", orderSearch);
-      
+
       const response = await fetch(`/api/orders?all=true&${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch orders");
       const data = await response.json();
@@ -388,8 +393,52 @@ export default function AdminPage() {
   }
 
   // ─── Product CRUD ────────────────────────────────────
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      // Unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 11)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // Upload to 'products' bucket
+      const { data, error } = await supabase.storage
+        .from('products-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      // Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('products-images')
+        .getPublicUrl(filePath);
+
+      setAddForm(prev => ({ ...prev, image_url: publicUrl }));
+      setImagePreview(publicUrl);
+      addToast("Image uploaded successfully", "success");
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      addToast(`Upload failed: ${err.message}`, "error");
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(100);
+    }
+  }
+
   async function addProduct(e: React.FormEvent) {
     e.preventDefault();
+    if (isUploading) {
+      addToast("Please wait for image upload to complete", "warning");
+      return;
+    }
     try {
       setAddingProduct(true);
       const response = await fetch("/api/products", {
@@ -815,7 +864,7 @@ export default function AdminPage() {
 
           <CardContent className="p-0 overflow-x-auto">
             {orderLoading && <div className="flex items-center justify-center py-12"><Loader2 className="size-6 text-luxe-primary animate-spin" /></div>}
-            
+
             {!orderLoading && (
               <>
                 <table className="w-full text-[14px] text-left border-collapse">
@@ -1268,13 +1317,68 @@ export default function AdminPage() {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[12px] font-bold tracking-[0.05em] text-luxe-on-surface-variant uppercase">Image URL</label>
-                  <input type="url" value={addForm.image_url} onChange={(e) => { setAddForm(prev => ({ ...prev, image_url: e.target.value })); setImagePreview(e.target.value); }} placeholder="https://example.com/image.jpg" className="w-full px-4 py-2.5 bg-luxe-surface border border-luxe-outline-variant/40 rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-luxe-primary/20 focus:border-luxe-primary transition-all" />
-                  {imagePreview && (
-                    <div className="mt-2 relative rounded-lg overflow-hidden border border-luxe-outline-variant/30 h-32 bg-luxe-surface-container flex items-center justify-center">
-                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" onError={() => setImagePreview("")} />
-                    </div>
-                  )}
+                  <label className="text-[12px] font-bold tracking-[0.05em] text-luxe-on-surface-variant uppercase">Product Image *</label>
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const file = e.dataTransfer.files?.[0];
+                      if (file && fileInputRef.current) {
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        fileInputRef.current.files = dataTransfer.files;
+                        handleImageUpload({ target: fileInputRef.current } as any);
+                      }
+                    }}
+                    className={cn(
+                      "group relative min-h-[140px] rounded-xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center gap-3 cursor-pointer overflow-hidden bg-luxe-surface-container/20 hover:bg-luxe-accent/5",
+                      imagePreview ? "border-luxe-primary/50" : "border-luxe-outline-variant/40 hover:border-luxe-primary/60"
+                    )}
+                  >
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                    />
+
+                    {imagePreview ? (
+                      <>
+                        <img src={imagePreview} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Check className="size-6 mb-1" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Change Selection</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="size-10 rounded-full bg-luxe-primary/10 flex items-center justify-center">
+                          <Plus className="size-5 text-luxe-primary" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-[13px] font-semibold text-luxe-on-surface">Choose Artwork</p>
+                          <p className="text-[11px] text-luxe-on-surface-variant">SVG, PNG, JPG (Max 5MB)</p>
+                        </div>
+                      </>
+                    )}
+
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-luxe-surface/80 backdrop-blur-xs flex flex-col items-center justify-center p-6 space-y-3 z-20">
+                        <Loader2 className="size-6 text-luxe-primary animate-spin" />
+                        <div className="w-full bg-luxe-outline-variant/30 h-1 rounded-full overflow-hidden">
+                          <motion.div
+                            className="bg-luxe-primary h-full"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-bold text-luxe-primary uppercase tracking-widest">Mastering Upload...</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-3 pt-4 border-t border-luxe-outline-variant/20">
                   <Button type="button" variant="outline" onClick={() => setShowAddModal(false)} className="flex-1 border-luxe-outline-variant py-5 text-[13px] font-semibold">Cancel</Button>
