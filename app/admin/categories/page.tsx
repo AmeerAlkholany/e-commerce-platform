@@ -7,8 +7,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+
+import {
   Plus,
   Search,
+  BarChart3,
   Loader2,
   Trash2,
   Pencil,
@@ -250,87 +267,128 @@ export default function CategoriesPage() {
   const cascadeItem = { hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } };
 
   return (
-    <>
-      <div className="space-y-8 animate-in fade-in duration-500">
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
-
-      <div className="flex flex-col gap-8">
-        {/* Header Card */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-black text-white tracking-tight">Category <span className="text-luxe-primary">Hierarchy</span></h1>
-            <p className="text-luxe-on-surface-variant text-sm mt-1">Organize your inventory with precision and style.</p>
-          </div>
-          <div className="flex gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-luxe-outline size-4" />
-              <input type="text" placeholder="Search categories..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 pr-4 py-2 bg-luxe-surface border border-luxe-outline-variant/40 rounded-lg text-sm text-white focus:ring-1 focus:ring-luxe-primary outline-none w-64" />
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-luxe-surface">
+        {/* Left Sidebar - Mirrored from admin/page.tsx */}
+        <Sidebar className="border-r border-luxe-outline-variant/30 bg-luxe-surface">
+          <SidebarHeader className="p-6 border-b border-luxe-outline-variant/20 flex flex-col gap-2">
+            <div>
+              <span className="font-black tracking-tighter text-xl text-white select-none">
+                LU<span className="text-luxe-primary">XE</span> GLOBAL
+              </span>
+              <p className="text-[11px] text-luxe-on-surface-variant uppercase tracking-wider font-semibold">Enterprise Control</p>
             </div>
-            <Button onClick={() => setShowAddModal(true)} className="bg-luxe-primary text-luxe-on-primary"><Plus className="size-4 mr-2" /> New Category</Button>
-          </div>
-        </div>
+          </SidebarHeader>
+          <SidebarContent className="p-4">
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-[10px] uppercase font-bold tracking-widest text-luxe-on-surface-variant/70 mb-2">Navigation</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem><Link href="/admin"><SidebarMenuButton className="text-luxe-on-surface-variant hover:text-white"><BarChart3 className="size-4" /><span>Overview</span></SidebarMenuButton></Link></SidebarMenuItem>
+                  <SidebarMenuItem><Link href="/admin"><SidebarMenuButton className="text-luxe-on-surface-variant hover:text-white"><Package className="size-4" /><span>Inventory</span></SidebarMenuButton></Link></SidebarMenuItem>
+                  <SidebarMenuItem><SidebarMenuButton isActive className="bg-luxe-primary/10 text-luxe-primary"><Layers className="size-4" /><span>Categories</span></SidebarMenuButton></SidebarMenuItem>
+                  <SidebarMenuItem><Link href="/admin"><SidebarMenuButton className="text-luxe-on-surface-variant hover:text-white"><ClipboardList className="size-4" /><span>Orders</span></SidebarMenuButton></Link></SidebarMenuItem>
+                  <SidebarMenuItem><Link href="/admin"><SidebarMenuButton className="text-luxe-on-surface-variant hover:text-white"><FileText className="size-4" /><span>Reports</span></SidebarMenuButton></Link></SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+          <SidebarFooter className="p-4 border-t border-luxe-outline-variant/20">
+            <Button onClick={() => setShowAddModal(true)} className="w-full bg-luxe-primary text-luxe-on-primary hover:bg-luxe-primary/95 text-xs font-bold tracking-wider flex items-center justify-center gap-1.5"><Plus className="size-3.5" /> Add Category</Button>
+          </SidebarFooter>
+        </Sidebar>
 
-        {/* Bulk Actions Bar */}
-        <AnimatePresence>
-          {selectedIds.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="bg-luxe-primary/10 border border-luxe-primary/30 rounded-xl p-4 flex items-center justify-between">
-              <span className="text-luxe-primary font-bold text-sm tracking-wide">{selectedIds.length} categories selected</span>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setSelectedIds([])} className="border-luxe-primary/30 text-luxe-primary">Cancel</Button>
-                <Button size="sm" onClick={() => setShowBulkDelete(true)} className="bg-luxe-error text-white"><Trash2 className="size-4 mr-2" /> Bulk Delete</Button>
+        <SidebarInset className="flex-1 flex flex-col min-h-screen bg-luxe-surface">
+          <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-luxe-outline-variant/20 bg-luxe-surface px-6 md:px-8">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="text-luxe-on-surface hover:bg-luxe-surface-container size-9" />
+              <div className="h-4 w-px bg-luxe-outline-variant/30" />
+              <span className="text-[12px] font-semibold text-luxe-on-surface-variant/80 tracking-wider uppercase">Categories Management</span>
+            </div>
+          </header>
+
+          <main className="flex-1 p-6 md:p-8 space-y-8 max-w-[1440px] w-full mx-auto">
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
+
+            <div className="flex flex-col gap-8">
+              {/* Header Card */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <h1 className="text-3xl font-black text-white tracking-tight">Category <span className="text-luxe-primary">Hierarchy</span></h1>
+                  <p className="text-luxe-on-surface-variant text-sm mt-1">Organize your inventory with precision and style.</p>
+                </div>
+                <div className="flex gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-luxe-outline size-4" />
+                    <input type="text" placeholder="Search categories..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 pr-4 py-2 bg-luxe-surface border border-luxe-outline-variant/40 rounded-lg text-sm text-white focus:ring-1 focus:ring-luxe-primary outline-none w-64" />
+                  </div>
+                  <Button onClick={() => setShowAddModal(true)} className="bg-luxe-primary text-luxe-on-primary"><Plus className="size-4 mr-2" /> New Category</Button>
+                </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
-        {/* Table Card */}
-        <Card className="glass-panel border-none shadow-sm rounded-xl overflow-hidden">
-          <CardContent className="p-0">
-            {loading ? (
-              <div className="flex items-center justify-center py-20"><Loader2 className="size-8 text-luxe-primary animate-spin" /></div>
-            ) : (
-              <table className="w-full text-sm text-left border-collapse">
-                <thead>
-                  <tr className="bg-luxe-surface-container/50 border-b border-luxe-outline-variant/20 text-[11px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">
-                    <th className="py-4 px-6 w-10"><button onClick={toggleSelectAll}>{selectedIds.length === filteredCategories.length ? <CheckSquare className="size-4 text-luxe-primary" /> : <Square className="size-4" />}</button></th>
-                    <th className="py-4 px-6 cursor-pointer hover:text-luxe-primary" onClick={() => { setSortKey("name"); setSortDir(prev => prev === "asc" ? "desc" : "asc"); }}><div className="flex items-center gap-1">Category Name <ArrowUpDown className="size-3" /></div></th>
-                    <th className="py-4 px-6 cursor-pointer hover:text-luxe-primary" onClick={() => { setSortKey("parent"); setSortDir(prev => prev === "asc" ? "desc" : "asc"); }}><div className="flex items-center gap-1">Parent <ArrowUpDown className="size-3" /></div></th>
-                    <th className="py-4 px-6 text-center">Products</th>
-                    <th className="py-4 px-6 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <motion.tbody variants={staggerContainer} initial="hidden" animate="visible">
-                  {filteredCategories.map(cat => (
-                    <motion.tr key={cat.id} variants={cascadeItem} className={cn("border-b border-luxe-outline-variant/10 hover:bg-luxe-primary/5 transition-colors", selectedIds.includes(cat.id) && "bg-luxe-primary/5")}>
-                      <td className="py-4 px-6"><button onClick={() => toggleSelect(cat.id)}>{selectedIds.includes(cat.id) ? <CheckSquare className="size-4 text-luxe-primary" /> : <Square className="size-4" />}</button></td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-2">
-                          {cat.parent_id && <div className="h-4 w-px bg-luxe-primary/40 ml-2 mr-1" />}
-                          <span className={cn("font-semibold text-white", cat.parent_id ? "opacity-90" : "text-lg")}>{cat.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        {cat.categories ? <Badge variant="outline" className="text-[10px] font-bold border-luxe-primary/30 text-luxe-primary uppercase">{cat.categories.name}</Badge> : <span className="text-luxe-on-surface-variant/40">—</span>}
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <span className="font-mono text-sm text-luxe-primary">{cat._count.products} items</span>
-                      </td>
-                      <td className="py-4 px-6 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => { setEditingId(cat.id); setEditForm({ name: cat.name, parent_id: cat.parent_id?.toString() || "" }); }} className="text-luxe-primary hover:bg-luxe-primary/10"><Pencil className="size-4" /></Button>
-                          <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm({ id: cat.id, name: cat.name })} className="text-luxe-error hover:bg-luxe-error/10"><Trash2 className="size-4" /></Button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </motion.tbody>
-              </table>
-            )}
-            {!loading && filteredCategories.length === 0 && <div className="text-center py-20 text-luxe-on-surface-variant">No categories found.</div>}
-          </CardContent>
-        </Card>
+              {/* Bulk Actions Bar */}
+              <AnimatePresence>
+                {selectedIds.length > 0 && (
+                  <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="bg-luxe-primary/10 border border-luxe-primary/30 rounded-xl p-4 flex items-center justify-between">
+                    <span className="text-luxe-primary font-bold text-sm tracking-wide">{selectedIds.length} categories selected</span>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setSelectedIds([])} className="border-luxe-primary/30 text-luxe-primary">Cancel</Button>
+                      <Button size="sm" onClick={() => setShowBulkDelete(true)} className="bg-luxe-error text-white"><Trash2 className="size-4 mr-2" /> Bulk Delete</Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Table Card */}
+              <Card className="glass-panel border-none shadow-sm rounded-xl overflow-hidden">
+                <CardContent className="p-0">
+                  {loading ? (
+                    <div className="flex items-center justify-center py-20"><Loader2 className="size-8 text-luxe-primary animate-spin" /></div>
+                  ) : (
+                    <table className="w-full text-sm text-left border-collapse">
+                      <thead>
+                        <tr className="bg-luxe-surface-container/50 border-b border-luxe-outline-variant/20 text-[11px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">
+                          <th className="py-4 px-6 w-10"><button onClick={toggleSelectAll}>{selectedIds.length === filteredCategories.length ? <CheckSquare className="size-4 text-luxe-primary" /> : <Square className="size-4" />}</button></th>
+                          <th className="py-4 px-6 cursor-pointer hover:text-luxe-primary" onClick={() => { setSortKey("name"); setSortDir(prev => prev === "asc" ? "desc" : "asc"); }}><div className="flex items-center gap-1">Category Name <ArrowUpDown className="size-3" /></div></th>
+                          <th className="py-4 px-6 cursor-pointer hover:text-luxe-primary" onClick={() => { setSortKey("parent"); setSortDir(prev => prev === "asc" ? "desc" : "asc"); }}><div className="flex items-center gap-1">Parent <ArrowUpDown className="size-3" /></div></th>
+                          <th className="py-4 px-6 text-center">Products</th>
+                          <th className="py-4 px-6 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <motion.tbody variants={staggerContainer} initial="hidden" animate="visible">
+                        {filteredCategories.map(cat => (
+                          <motion.tr key={cat.id} variants={cascadeItem} className={cn("border-b border-luxe-outline-variant/10 hover:bg-luxe-primary/5 transition-colors", selectedIds.includes(cat.id) && "bg-luxe-primary/5")}>
+                            <td className="py-4 px-6"><button onClick={() => toggleSelect(cat.id)}>{selectedIds.includes(cat.id) ? <CheckSquare className="size-4 text-luxe-primary" /> : <Square className="size-4" />}</button></td>
+                            <td className="py-4 px-6">
+                              <div className="flex items-center gap-2">
+                                {cat.parent_id && <div className="h-4 w-px bg-luxe-primary/40 ml-2 mr-1" />}
+                                <span className={cn("font-semibold text-white", cat.parent_id ? "opacity-90" : "text-lg")}>{cat.name}</span>
+                              </div>
+                            </td>
+                            <td className="py-4 px-6">
+                              {cat.categories ? <Badge variant="outline" className="text-[10px] font-bold border-luxe-primary/30 text-luxe-primary uppercase">{cat.categories.name}</Badge> : <span className="text-luxe-on-surface-variant/40">—</span>}
+                            </td>
+                            <td className="py-4 px-6 text-center">
+                              <span className="font-mono text-sm text-luxe-primary">{cat._count.products} items</span>
+                            </td>
+                            <td className="py-4 px-6 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <Button variant="ghost" size="sm" onClick={() => { setEditingId(cat.id); setEditForm({ name: cat.name, parent_id: cat.parent_id?.toString() || "" }); }} className="text-luxe-primary hover:bg-luxe-primary/10"><Pencil className="size-4" /></Button>
+                                <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm({ id: cat.id, name: cat.name })} className="text-luxe-error hover:bg-luxe-error/10"><Trash2 className="size-4" /></Button>
+                              </div>
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </motion.tbody>
+                    </table>
+                  )}
+                  {!loading && filteredCategories.length === 0 && <div className="text-center py-20 text-luxe-on-surface-variant">No categories found.</div>}
+                </CardContent>
+              </Card>
+            </div>
+          </main>
+        </SidebarInset>
       </div>
-    </div>
 
       {/* ─── MODALS ─────────────────────────────────────────── */}
       <AnimatePresence>
@@ -426,7 +484,7 @@ export default function CategoriesPage() {
           </Modal>
         )}
       </AnimatePresence>
-    </>
+    </SidebarProvider>
   );
 }
 

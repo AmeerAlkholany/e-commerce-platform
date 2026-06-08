@@ -7,6 +7,12 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get("categoryId");
     const search = searchParams.get("search");
+    const countOnly = searchParams.get("countOnly") === "true";
+
+    if (countOnly) {
+      const count = await prisma.products.count();
+      return NextResponse.json({ count });
+    }
 
     let whereClause: any = {};
 
