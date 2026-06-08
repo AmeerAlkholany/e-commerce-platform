@@ -4,6 +4,14 @@ import { serializeBigInt } from "@/lib/json";
 
 export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const countOnly = searchParams.get("countOnly") === "true";
+
+    if (countOnly) {
+      const count = await prisma.categories.count();
+      return NextResponse.json({ count });
+    }
+
     const categories = await prisma.categories.findMany({
       include: {
         categories: {

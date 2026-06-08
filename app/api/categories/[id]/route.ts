@@ -4,10 +4,11 @@ import { serializeBigInt } from "@/lib/json";
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: rawId } = await params;
+    const id = parseInt(rawId);
     const body = await request.json();
     const { name, parent_id } = body;
 
@@ -38,10 +39,11 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: rawId } = await params;
+    const id = parseInt(rawId);
     const { searchParams } = new URL(request.url);
     const deleteProducts = searchParams.get("deleteProducts") === "true";
     const deleteSubCategories = searchParams.get("deleteSubCategories") === "true";
