@@ -20,8 +20,13 @@ import {
   ChevronRight,
   Download,
   ArrowUpDown,
+  FileText,
+  DollarSign,
+  Layers,
+  Image as ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 // ─── Types ─────────────────────────────────────────────
 interface Product {
@@ -414,54 +419,126 @@ export default function ProductsPage() {
 
 function AddModal({ onClose, onSubmit, form, setForm, categories, imagePreview, isUploading, uploadProgress, addingProduct, handleImageUpload, fileInputRef }: any) {
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="bg-luxe-surface border border-luxe-outline-variant/30 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-luxe-outline-variant/20 flex items-center justify-between">
-          <h3 className="text-xl font-bold text-white tracking-tight">Add New Product</h3>
-          <button onClick={onClose} className="text-luxe-on-surface-variant hover:text-white transition-colors"><X className="size-5" /></button>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={onClose}>
+      <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="bg-[#0F0F0F] border border-luxe-primary/20 rounded-2xl shadow-3xl w-full max-w-xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="p-6 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-luxe-primary/5 to-transparent">
+          <div>
+            <h3 className="text-xl font-black text-white tracking-tight uppercase italic">Curate <span className="text-luxe-primary">Addition</span></h3>
+            <p className="text-[10px] text-luxe-on-surface-variant font-bold tracking-[0.2em] uppercase mt-1">Register new inventory asset</p>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5 text-luxe-on-surface-variant hover:text-white transition-all"><X className="size-5" /></button>
         </div>
-        <form onSubmit={onSubmit} className="p-6 space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Product Name *</label>
-            <input required value={form.name} onChange={e => setForm((p:any) => ({ ...p, name: e.target.value }))} type="text" className="w-full bg-luxe-surface-container border border-luxe-outline-variant/30 rounded-lg px-4 py-2.5 text-white outline-none focus:border-luxe-primary" />
+        
+        <form onSubmit={onSubmit} className="p-8 space-y-6 overflow-y-auto custom-scrollbar">
+          {/* Main Attributes */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black tracking-[0.2em] text-luxe-primary uppercase flex items-center gap-2">
+                <Package className="size-3" /> product name
+              </label>
+              <Input 
+                required 
+                value={form.name} 
+                onChange={e => setForm((p:any) => ({ ...p, name: e.target.value }))} 
+                placeholder="e.g. Phantom Chronograph Edition"
+                className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-luxe-primary/50 transition-all"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black tracking-[0.2em] text-luxe-primary uppercase flex items-center gap-2">
+                <FileText className="size-3" /> description
+              </label>
+              <textarea 
+                value={form.description} 
+                onChange={e => setForm((p:any) => ({ ...p, description: e.target.value }))} 
+                placeholder="Describe the heritage, craftsmanship, and specifications..."
+                rows={3} 
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:border-luxe-primary/50 transition-all resize-none min-h-[100px]" 
+              />
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Description</label>
-            <textarea value={form.description} onChange={e => setForm((p:any) => ({ ...p, description: e.target.value }))} rows={3} className="w-full bg-luxe-surface-container border border-luxe-outline-variant/30 rounded-lg px-4 py-2.5 text-white outline-none focus:border-luxe-primary resize-none" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-             <div className="space-y-1.5">
-               <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Price *</label>
-               <input required type="number" step="0.01" value={form.price} onChange={e => setForm((p:any) => ({ ...p, price: e.target.value }))} className="w-full bg-luxe-surface-container border border-luxe-outline-variant/30 rounded-lg px-4 py-2.5 text-white outline-none focus:border-luxe-primary" />
+
+          {/* Logistics & Metrics */}
+          <div className="grid grid-cols-2 gap-6">
+             <div className="space-y-2">
+               <label className="text-[10px] font-black tracking-[0.2em] text-luxe-primary uppercase flex items-center gap-2">
+                 <DollarSign className="size-3" /> price
+               </label>
+               <Input 
+                required 
+                type="number" 
+                step="0.01" 
+                value={form.price} 
+                onChange={e => setForm((p:any) => ({ ...p, price: e.target.value }))} 
+                placeholder="0.00"
+                className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-luxe-primary/50"
+               />
              </div>
-             <div className="space-y-1.5">
-               <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Stock</label>
-               <input type="number" value={form.stock} onChange={e => setForm((p:any) => ({ ...p, stock: e.target.value }))} className="w-full bg-luxe-surface-container border border-luxe-outline-variant/30 rounded-lg px-4 py-2.5 text-white outline-none focus:border-luxe-primary" />
+             <div className="space-y-2">
+               <label className="text-[10px] font-black tracking-[0.2em] text-luxe-primary uppercase flex items-center gap-2">
+                 <Layers className="size-3" /> stock
+               </label>
+               <Input 
+                type="number" 
+                value={form.stock} 
+                onChange={e => setForm((p:any) => ({ ...p, stock: e.target.value }))} 
+                placeholder="0"
+                className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-luxe-primary/50"
+               />
              </div>
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Category</label>
-            <select value={form.category_id} onChange={e => setForm((p:any) => ({ ...p, category_id: e.target.value }))} className="w-full bg-luxe-surface-container border border-luxe-outline-variant/30 rounded-lg px-4 py-2.5 text-white outline-none focus:border-luxe-primary">
-               <option value="">Select Category...</option>
-               {categories.map((c:any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black tracking-[0.2em] text-luxe-primary uppercase">Classification</label>
+            <select 
+              value={form.category_id} 
+              onChange={e => setForm((p:any) => ({ ...p, category_id: e.target.value }))} 
+              className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-sm text-white outline-none focus:border-luxe-primary/50 transition-all appearance-none cursor-pointer"
+            >
+               <option value="" className="bg-[#0F0F0F]">Select Category...</option>
+               {categories.map((c:any) => <option key={c.id} value={c.id} className="bg-[#0F0F0F]">{c.name}</option>)}
             </select>
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Image</label>
-            <div onClick={() => fileInputRef.current?.click()} className="relative h-40 border-2 border-dashed border-luxe-outline-variant/30 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-luxe-primary/5 transition-colors overflow-hidden">
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black tracking-[0.2em] text-luxe-primary uppercase flex items-center gap-2">
+              <ImageIcon className="size-3" /> product cover
+            </label>
+            <div onClick={() => fileInputRef.current?.click()} className="relative h-44 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-luxe-primary/5 hover:border-luxe-primary/30 transition-all overflow-hidden group">
                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
-               {imagePreview ? <img src={imagePreview} className="absolute inset-0 w-full h-full object-cover" alt="Preview" /> : <div className="flex flex-col items-center gap-2"><Plus className="size-6 text-luxe-primary" /><span className="text-xs text-luxe-on-surface-variant">Upload Artwork</span></div>}
+               {imagePreview ? (
+                 <img src={imagePreview} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Preview" />
+               ) : (
+                 <div className="flex flex-col items-center gap-3">
+                   <div className="size-12 rounded-full bg-luxe-primary/10 flex items-center justify-center text-luxe-primary group-hover:scale-110 transition-transform">
+                    <Plus className="size-6" />
+                   </div>
+                   <span className="text-[10px] font-bold text-luxe-on-surface-variant uppercase tracking-widest">Upload Artwork Asset</span>
+                 </div>
+               )}
                {isUploading && (
-                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-6 space-y-3">
-                    <Loader2 className="size-6 text-luxe-primary animate-spin" />
-                    <div className="w-full bg-white/20 h-1 rounded-full overflow-hidden"><motion.div className="bg-luxe-primary h-full" initial={{ width: 0 }} animate={{ width: `${uploadProgress}%` }} /></div>
+                  <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-8 space-y-4">
+                    <Loader2 className="size-8 text-luxe-primary animate-spin" />
+                    <div className="w-full max-w-[200px]">
+                      <div className="flex justify-between text-[10px] font-bold text-white uppercase mb-2">
+                        <span>Uploading</span>
+                        <span>{uploadProgress}%</span>
+                      </div>
+                      <div className="w-full bg-white/10 h-1 rounded-full overflow-hidden">
+                        <motion.div className="bg-luxe-primary h-full" initial={{ width: 0 }} animate={{ width: `${uploadProgress}%` }} />
+                      </div>
+                    </div>
                   </div>
                )}
             </div>
           </div>
-          <div className="flex gap-4 pt-4 border-t border-luxe-outline-variant/20">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">Cancel</Button>
-            <Button type="submit" disabled={addingProduct} className="flex-1 bg-luxe-primary text-luxe-on-primary">{addingProduct ? <Loader2 className="animate-spin size-4" /> : "Link Product"}</Button>
+
+          <div className="flex gap-4 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1 h-12 border-white/10 text-white hover:bg-white/5 uppercase text-[11px] font-black tracking-widest">Cancel</Button>
+            <Button type="submit" disabled={addingProduct} className="flex-1 h-12 bg-luxe-primary text-luxe-on-primary hover:opacity-90 uppercase text-[11px] font-black tracking-widest">
+              {addingProduct ? <Loader2 className="animate-spin size-4" /> : "Add Product"}
+            </Button>
           </div>
         </form>
       </motion.div>
@@ -479,7 +556,7 @@ function DeleteModal({ onClose, onDelete, deleting, name }: any) {
         </div>
         <p className="text-sm text-luxe-on-surface-variant mb-6">Are you certain you wish to eliminate <strong className="text-white">{name}</strong> from the database? This action is irreversible.</p>
         <div className="flex gap-3 justify-end pt-4 border-t border-luxe-outline-variant/20">
-          <Button variant="outline" onClick={onClose}>Abort</Button>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={onDelete} disabled={deleting} className="bg-luxe-error text-white hover:bg-luxe-error/90">{deleting ? <Loader2 className="animate-spin size-4" /> : "Confirm Deletion"}</Button>
         </div>
       </motion.div>
