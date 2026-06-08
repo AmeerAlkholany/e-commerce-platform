@@ -8,6 +8,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+
+import {
   TrendingUp,
   TrendingDown,
   ShoppingBag,
@@ -601,53 +617,172 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-luxe-surface py-12 px-4 md:px-[64px] max-w-[1440px] mx-auto space-y-12">
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-luxe-surface">
+        {/* Left Sidebar */}
+        <Sidebar className="border-r border-luxe-outline-variant/30 bg-luxe-surface">
+          <SidebarHeader className="p-6 border-b border-luxe-outline-variant/20 flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold tracking-[0.2em] text-luxe-primary uppercase bg-luxe-primary/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="size-1.5 bg-luxe-primary rounded-full animate-ping" />
+                Live Data
+              </span>
+            </div>
+            <div>
+              <span className="font-black tracking-tighter text-xl text-white select-none">
+                LU<span className="text-luxe-primary">XE</span> GLOBAL
+              </span>
+              <p className="text-[11px] text-luxe-on-surface-variant uppercase tracking-wider font-semibold">Enterprise Control</p>
+            </div>
+          </SidebarHeader>
 
-      {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-luxe-outline-variant/30 pb-8">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-[12px] font-bold tracking-[0.2em] text-luxe-tertiary uppercase bg-luxe-tertiary/10 px-3 py-1 rounded-full">Enterprise Dashboard</span>
-            <span className="size-2 bg-luxe-primary rounded-full animate-ping" />
-            <span className="text-[10px] text-luxe-primary font-bold tracking-wider">LIVE DATA</span>
-          </div>
-          <h1 className="text-[36px] font-light tracking-tight text-luxe-on-surface">Luxe Global <span className="font-normal">Control Panel</span></h1>
-        </div>
-        <div className="flex gap-3">
-          <Button asChild variant="outline" className="border-luxe-outline-variant bg-transparent text-luxe-on-surface hover:bg-luxe-surface-container py-5 px-6 rounded-lg text-[13px] font-semibold tracking-wider cursor-pointer">
-            <Link href="/dashboard">Go to Client View</Link>
-          </Button>
-          {activeTab === "products" && (
-            <Button onClick={() => setShowAddModal(true)} className="bg-luxe-primary text-luxe-on-primary hover:bg-luxe-primary/95 py-5 px-6 rounded-lg text-[13px] font-semibold tracking-wider cursor-pointer flex items-center gap-1.5">
-              <Plus className="size-4" /> Add Luxury Item
+          <SidebarContent className="p-4">
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-[10px] uppercase font-bold tracking-widest text-luxe-on-surface-variant/70 mb-2">Navigation</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === "overview"}
+                      onClick={() => setActiveTab("overview")}
+                      className={cn(
+                        "w-full text-left font-medium tracking-wide transition-all duration-200 py-2.5 px-3 rounded-lg flex items-center gap-3 text-sm select-none",
+                        activeTab === "overview" 
+                          ? "bg-luxe-primary/10 text-luxe-primary hover:bg-luxe-primary/15" 
+                          : "text-luxe-on-surface-variant hover:text-white hover:bg-luxe-surface-container-high"
+                      )}
+                    >
+                      <BarChart3 className="size-4" />
+                      <span>Overview</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === "products"}
+                      onClick={() => setActiveTab("products")}
+                      className={cn(
+                        "w-full text-left font-medium tracking-wide transition-all duration-200 py-2.5 px-3 rounded-lg flex items-center justify-between text-sm select-none",
+                        activeTab === "products" 
+                          ? "bg-luxe-primary/10 text-luxe-primary hover:bg-luxe-primary/15" 
+                          : "text-luxe-on-surface-variant hover:text-white hover:bg-luxe-surface-container-high"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Package className="size-4" />
+                        <span>Inventory Catalog</span>
+                      </div>
+                      <Badge className="bg-luxe-surface-container text-luxe-on-surface-variant text-[10px] px-2 py-0.5 border border-luxe-outline-variant/30">
+                        {products.length}
+                      </Badge>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === "orders"}
+                      onClick={() => setActiveTab("orders")}
+                      className={cn(
+                        "w-full text-left font-medium tracking-wide transition-all duration-200 py-2.5 px-3 rounded-lg flex items-center justify-between text-sm select-none",
+                        activeTab === "orders" 
+                          ? "bg-luxe-primary/10 text-luxe-primary hover:bg-luxe-primary/15" 
+                          : "text-luxe-on-surface-variant hover:text-white hover:bg-luxe-surface-container-high"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <ClipboardList className="size-4" />
+                        <span>Orders</span>
+                      </div>
+                      <Badge className="bg-luxe-surface-container text-luxe-on-surface-variant text-[10px] px-2 py-0.5 border border-luxe-outline-variant/30">
+                        {orders.length}
+                      </Badge>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === "reports"}
+                      onClick={() => setActiveTab("reports")}
+                      className={cn(
+                        "w-full text-left font-medium tracking-wide transition-all duration-200 py-2.5 px-3 rounded-lg flex items-center gap-3 text-sm select-none",
+                        activeTab === "reports" 
+                          ? "bg-luxe-primary/10 text-luxe-primary hover:bg-luxe-primary/15" 
+                          : "text-luxe-on-surface-variant hover:text-white hover:bg-luxe-surface-container-high"
+                      )}
+                    >
+                      <FileText className="size-4" />
+                      <span>Reports</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+
+          <SidebarFooter className="p-4 border-t border-luxe-outline-variant/20 flex flex-col gap-2">
+            {activeTab === "products" && (
+              <Button 
+                onClick={() => setShowAddModal(true)} 
+                className="w-full bg-luxe-primary text-luxe-on-primary hover:bg-luxe-primary/95 py-2.5 rounded-lg text-xs font-bold tracking-wider flex items-center justify-center gap-1.5"
+              >
+                <Plus className="size-3.5" /> Add Luxury Item
+              </Button>
+            )}
+            <Button 
+              asChild 
+              variant="outline" 
+              className="w-full border-luxe-outline-variant bg-transparent text-luxe-on-surface-variant hover:text-white hover:bg-luxe-surface-container-high py-2.5 rounded-lg text-xs font-bold tracking-wider flex items-center justify-center gap-1.5"
+            >
+              <Link href="/dashboard">
+                <ChevronLeft className="size-3.5" /> Client View
+              </Link>
             </Button>
-          )}
-        </div>
-      </motion.div>
+          </SidebarFooter>
+        </Sidebar>
 
-      {/* Error Banner */}
-      <AnimatePresence>
-        {(productError || orderError || reportsError) && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-luxe-error-container border border-luxe-error/20 rounded-lg p-4 flex items-center gap-3">
-            <AlertTriangle className="size-5 text-luxe-error" />
-            <span className="text-luxe-on-error-container text-sm">{productError || orderError || reportsError}</span>
-            <button onClick={() => { setProductError(null); setOrderError(null); setReportsError(null); }} className="ml-auto hover:bg-luxe-error/10 rounded p-1">
-              <X className="size-4" />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {/* Inset Main Content Area */}
+        <SidebarInset className="flex-1 flex flex-col min-h-screen bg-luxe-surface">
+          {/* Top Control Bar */}
+          <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-luxe-outline-variant/20 bg-luxe-surface px-6 md:px-8">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="text-luxe-on-surface hover:bg-luxe-surface-container size-9" />
+              <div className="h-4 w-px bg-luxe-outline-variant/30" />
+              <span className="text-[12px] font-semibold text-luxe-on-surface-variant/80 tracking-wider">
+                ADMIN CONSOLE
+              </span>
+              <span className="text-luxe-on-surface-variant/40">/</span>
+              <span className="text-[12px] font-bold text-white uppercase tracking-wider">
+                {activeTab === "overview" && "Performance Overview"}
+                {activeTab === "products" && "Inventory Catalog"}
+                {activeTab === "orders" && "Orders Management"}
+                {activeTab === "reports" && "Analytics Reports"}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="size-2 bg-luxe-primary rounded-full animate-ping" />
+                <span className="text-[10px] text-luxe-primary font-bold tracking-widest uppercase">Live Connect</span>
+              </div>
+            </div>
+          </header>
 
-      {/* Tabs */}
-      <div className="flex gap-4 border-b border-luxe-outline-variant/20 pb-1 overflow-x-auto">
-        <button onClick={() => setActiveTab("overview")} className={`pb-4 text-[14px] font-bold tracking-[0.05em] uppercase border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "overview" ? "border-luxe-primary text-luxe-primary" : "border-transparent text-luxe-on-surface-variant"}`}>Performance Overview</button>
-        <button onClick={() => setActiveTab("products")} className={`pb-4 text-[14px] font-bold tracking-[0.05em] uppercase border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "products" ? "border-luxe-primary text-luxe-primary" : "border-transparent text-luxe-on-surface-variant"}`}>Inventory Catalog ({products.length})</button>
-        <button onClick={() => setActiveTab("orders")} className={`pb-4 text-[14px] font-bold tracking-[0.05em] uppercase border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "orders" ? "border-luxe-primary text-luxe-primary" : "border-transparent text-luxe-on-surface-variant"}`}>Orders ({orders.length})</button>
-        <button onClick={() => setActiveTab("reports")} className={`pb-4 text-[14px] font-bold tracking-[0.05em] uppercase border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "reports" ? "border-luxe-primary text-luxe-primary" : "border-transparent text-luxe-on-surface-variant"}`}>
-          <FileText className="size-4 inline mr-1" /> Reports
-        </button>
-      </div>
+          {/* Main Content Pane */}
+          <main className="flex-1 p-6 md:p-8 space-y-8 max-w-[1440px] w-full mx-auto">
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
+
+            {/* Error Banner */}
+            <AnimatePresence>
+              {(productError || orderError || reportsError) && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-luxe-error-container border border-luxe-error/20 rounded-lg p-4 flex items-center gap-3">
+                  <AlertTriangle className="size-5 text-luxe-error" />
+                  <span className="text-luxe-on-error-container text-sm">{productError || orderError || reportsError}</span>
+                  <button onClick={() => { setProductError(null); setOrderError(null); setReportsError(null); }} className="ml-auto hover:bg-luxe-error/10 rounded p-1">
+                    <X className="size-4" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
       {/* ─── OVERVIEW TAB ───────────────────────────────── */}
       {activeTab === "overview" && (
@@ -1414,5 +1549,8 @@ export default function AdminPage() {
         )}
       </AnimatePresence>
     </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 }

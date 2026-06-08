@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { ClickSpark } from "@/components/magicui/click-spark";
 import { LenisProvider } from "@/components/lenis-provider";
+import { ClientLayout } from "@/components/ClientLayout";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -38,6 +37,7 @@ const legalLinks = [
 
 export default function RootLayout({
   children,
+  ...props
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
@@ -54,12 +54,17 @@ export default function RootLayout({
           duration={400}
         >
           <LenisProvider>
-            <Navbar links={navLinks} cartCount={2} />
-            <main className="flex-1">{children}</main>
-            <Footer quickLinks={quickLinks} legalLinks={legalLinks} />
+            <ClientLayout
+              navLinks={navLinks}
+              quickLinks={quickLinks}
+              legalLinks={legalLinks}
+            >
+              {children}
+            </ClientLayout>
           </LenisProvider>
         </ClickSpark>
       </body>
     </html>
   );
 }
+
