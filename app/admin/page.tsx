@@ -1,179 +1,185 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import {
-  TrendingUp,
-  ShoppingBag,
-  DollarSign,
-  Users,
-  Loader2,
-  Package,
+import { 
+  TrendingUp, 
+  ShoppingBag, 
+  DollarSign, 
+  Users, 
+  Loader2, 
+  Package, 
+  ArrowRight,
+  MousePointerClick,
+  RefreshCcw,
+  Calendar,
+  LayoutGrid
 } from "lucide-react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { MetricScorecard } from "@/components/admin/analytics/MetricScorecard";
+import { ChartBase } from "@/components/admin/analytics/ChartBase";
+import { 
+  RevenueAreaChart, 
+  SectorPieChart, 
+  ProductBarChart 
+} from "@/components/admin/analytics/IntelligenceCharts";
 
-// ─── Types ─────────────────────────────────────────────
-interface DashboardStats {
-  totalRevenue: number;
-  totalOrders: number;
-  totalUsers: number;
-  avgOrderValue: number;
-  salesData: { name: string; sales: number }[];
-  recentActivities: { id: string; type: string; title: string; subtitle: string; time: string }[];
-}
+// ─── Constants ──────────────────────────────────────────
+const STAGGER = {
+  container: { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } },
+  item: { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } } }
+};
 
-export default function AdminOverview() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+export default function GlobalSynopsis() {
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Simulated or actual fetch for dashboard overview
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        // In a real app, this would be a dedicated overview API
-        // For now, we'll use reports data or simulate
-        const res = await fetch("/api/reports");
-        const reports = await res.json();
-        
-        setStats({
-          totalRevenue: reports.totalRevenue,
-          totalOrders: reports.totalOrders,
-          totalUsers: 1248, // Simulated
-          avgOrderValue: reports.totalRevenue / reports.totalOrders,
-          salesData: reports.salesByMonth,
-          recentActivities: [
-            { id: "1", type: "order", title: "New acquisition initialized", subtitle: "Order #5829 by Julian V.", time: "2 mins ago" },
-            { id: "2", type: "inventory", title: "Stock depletion alert", subtitle: "Rolex Daytona (Silver) is low", time: "15 mins ago" },
-            { id: "3", type: "user", title: "New member onboarded", subtitle: "Sophia R. joined the platform", time: "1 hour ago" },
-            { id: "4", type: "order", title: "Transaction complete", subtitle: "Order #5821 successfully delivered", time: "3 hours ago" },
-          ]
-        });
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDashboardData();
-  }, []);
+  const fetchIntelligence = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admin/stats");
+      if (!res.ok) throw new Error("Failed to decrypt enterprise data");
+      setData(await res.json());
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (loading) return <div className="flex items-center justify-center py-40"><Loader2 className="size-10 text-luxe-primary animate-spin" /></div>;
-  if (!stats) return null;
+  useEffect(() => { fetchIntelligence(); }, []);
+
+  if (loading && !data) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Loader2 className="size-12 text-luxe-primary animate-spin" />
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-luxe-on-surface-variant animate-pulse">Decrypting Intelligence...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-         <div>
-            <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
-              GLOBAL <span className="text-luxe-primary">SYNOPSIS</span>
-            </h1>
-            <p className="text-luxe-on-surface-variant text-sm mt-1 flex items-center gap-2">
+    <motion.div 
+      variants={STAGGER.container} 
+      initial="hidden" 
+      animate="visible" 
+      className="space-y-8 pb-12"
+    >
+      {/* ─── Header Section ─────────────────────────────── */}
+      <motion.div variants={STAGGER.item} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+           <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic leading-[0.8]">
+             GLOBAL <span className="text-luxe-primary text-opacity-80">SYNOPSIS</span><sup>™</sup>
+           </h1>
+           <div className="flex items-center gap-3 mt-3">
+             <div className="flex items-center gap-1.5 px-3 py-1 bg-luxe-primary/5 border border-luxe-primary/20 rounded-full">
                <span className="size-1.5 bg-luxe-primary rounded-full animate-pulse" />
-               Real-time enterprise performance metrics.
-            </p>
-         </div>
-      </div>
-
-      {/* Grid Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Gross Acquisitions" value={`$${stats.totalRevenue.toLocaleString()}`} change="+24.5%" icon={<DollarSign className="size-5" />} />
-        <StatCard title="Transaction Volume" value={stats.totalOrders.toLocaleString()} change="+12.2%" icon={<ShoppingBag className="size-5" />} />
-        <StatCard title="Active Network" value={stats.totalUsers.toLocaleString()} change="+8.1%" icon={<Users className="size-5" />} />
-        <StatCard title="Avg Transaction" value={`$${Math.round(stats.avgOrderValue).toLocaleString()}`} change="+4.3%" icon={<TrendingUp className="size-5" />} />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Chart */}
-        <Card className="lg:col-span-2 glass-panel border-none p-6 overflow-hidden">
-          <CardHeader className="px-0 pt-0 flex flex-row items-center justify-between">
-             <div>
-                <CardTitle className="text-xl font-black text-white tracking-tight uppercase">Fiscal Velocity</CardTitle>
-                <CardDescription className="text-luxe-on-surface-variant">Annual revenue visualization.</CardDescription>
+               <span className="text-[10px] font-black text-luxe-primary uppercase tracking-widest">Enterprise Instance Live</span>
              </div>
-             <Badge className="bg-luxe-primary/10 text-luxe-primary border-luxe-primary/20 text-[10px] font-bold px-3 py-1 uppercase">Bullish</Badge>
-          </CardHeader>
-          <div className="h-[350px] w-full mt-6 -ml-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={stats.salesData}>
-                <defs>
-                  <linearGradient id="luxeGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#D4AF37" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2C2C2C" vertical={false} />
-                <XAxis dataKey="name" stroke="#555" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="#555" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v/1000}k`} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: "#0F0F0F", border: "1px solid #333", color: "#FFF", borderRadius: "12px", boxShadow: "0 10px 25px rgba(0,0,0,0.5)" }} 
-                  itemStyle={{ color: "#D4AF37" }}
-                />
-                <Area type="monotone" dataKey="sales" stroke="#D4AF37" strokeWidth={3} fillOpacity={1} fill="url(#luxeGradient)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card className="glass-panel border-none p-6">
-          <CardHeader className="px-0 pt-0">
-             <CardTitle className="text-xl font-black text-white tracking-tight uppercase">Live Stream</CardTitle>
-             <CardDescription className="text-luxe-on-surface-variant">Real-time system event log.</CardDescription>
-          </CardHeader>
-          <div className="space-y-6 mt-6">
-            {stats.recentActivities.map((act) => (
-              <div key={act.id} className="flex gap-4 group">
-                 <div className="relative">
-                    <div className="size-10 rounded-xl bg-luxe-surface-container-high border border-luxe-outline-variant/20 flex items-center justify-center text-luxe-primary group-hover:scale-110 transition-transform">
-                       {act.type === "order" && <ShoppingBag className="size-4" />}
-                       {act.type === "inventory" && <Package className="size-4" />}
-                       {act.type === "user" && <Users className="size-4" />}
-                    </div>
-                    <div className="absolute top-10 left-1/2 -translate-x-1/2 w-px h-10 bg-luxe-outline-variant/10 hidden last:hidden" />
-                 </div>
-                 <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                       <p className="text-sm font-bold text-white tracking-wide">{act.title}</p>
-                       <span className="text-[10px] text-luxe-on-surface-variant font-medium">{act.time}</span>
-                    </div>
-                    <p className="text-xs text-luxe-on-surface-variant mt-0.5">{act.subtitle}</p>
-                 </div>
-              </div>
-            ))}
-          </div>
-          <button className="w-full mt-8 py-3 rounded-xl border border-luxe-outline-variant/30 text-xs font-black text-luxe-on-surface-variant hover:text-white hover:bg-luxe-primary/5 transition-all uppercase tracking-[0.2em]">
-            Access Archives
-          </button>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({ title, value, change, icon }: { title: string; value: string; change: string; icon: React.ReactNode }) {
-  return (
-    <Card className="glass-panel border-none p-6 group hover:translate-y-[-4px] transition-all duration-300">
-      <div className="flex items-center justify-between mb-4">
-        <div className="size-10 rounded-xl bg-luxe-primary/10 flex items-center justify-center text-luxe-primary group-hover:bg-luxe-primary group-hover:text-luxe-on-primary transition-colors">
-          {icon}
+             <span className="text-luxe-on-surface-variant font-medium text-xs tracking-wide">Real-time performance metrics synchronized.</span>
+           </div>
         </div>
-        <Badge className="bg-luxe-primary/5 text-luxe-primary border hover:bg-luxe-primary/10 border-luxe-primary/20 text-[10px] py-1">
-           {change}
-        </Badge>
+        
+        <div className="flex items-center gap-2">
+           <Button variant="outline" className="h-10 bg-white/5 border-white/10 text-white rounded-xl px-4 hover:bg-white/10">
+              <Calendar className="size-3.5 mr-2 text-luxe-primary" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Last 30 Days</span>
+           </Button>
+           <Button onClick={fetchIntelligence} variant="outline" className="h-10 size-10 bg-white/5 border-white/10 text-white rounded-xl p-0 hover:bg-white/10">
+              <RefreshCcw className={loading ? "animate-spin size-3.5" : "size-3.5"} />
+           </Button>
+        </div>
+      </motion.div>
+
+      {/* ─── Top KPIs ────────────────────────────────────── */}
+      <motion.div variants={STAGGER.item} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricScorecard 
+          label="Total Revenue" 
+          value={data?.summary.revenue.toLocaleString()} 
+          prefix="$" 
+          trend={12.4} 
+          icon={<DollarSign className="size-5" />} 
+          isLoading={loading}
+        />
+        <MetricScorecard 
+          label="Transactions" 
+          value={data?.summary.orders.toLocaleString()} 
+          trend={8.2} 
+          icon={<ShoppingBag className="size-5" />} 
+          isLoading={loading}
+        />
+        <MetricScorecard 
+          label="Avg Transaction" 
+          value={data?.summary.aov.toLocaleString()} 
+          prefix="$" 
+          trend={-2.1} 
+          icon={<TrendingUp className="size-5" />} 
+          isLoading={loading}
+        />
+        <MetricScorecard 
+          label="Net Conversion" 
+          value={data?.summary.conversionRate} 
+          suffix="%" 
+          trend={4.3} 
+          icon={<MousePointerClick className="size-5" />} 
+          isLoading={loading}
+        />
+      </motion.div>
+
+      {/* ─── Primary Charts ──────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <motion.div variants={STAGGER.item} className="lg:col-span-2">
+          <ChartBase 
+            title="Fiscal Velocity" 
+            description="Acquisition momentum & gross revenue trajectory"
+            isLoading={loading}
+            headerAction={<Badge variant="outline" className="bg-luxe-primary/5 text-luxe-primary border-luxe-primary/20 text-[10px] uppercase font-bold tracking-widest px-3">Live Feed</Badge>}
+          >
+            <RevenueAreaChart data={data?.charts.revenueTrend || []} />
+          </ChartBase>
+        </motion.div>
+
+        <motion.div variants={STAGGER.item}>
+          <ChartBase 
+            title="Portfolio Sectors" 
+            description="Categorical revenue distribution breakdown"
+            isLoading={loading}
+          >
+            <SectorPieChart data={data?.charts.categoryBreakdown || []} />
+          </ChartBase>
+        </motion.div>
       </div>
-      <p className="text-[10px] font-bold text-luxe-on-surface-variant uppercase tracking-[0.2em]">{title}</p>
-      <p className="text-3xl font-black text-white mt-1 tracking-tighter italic">{value}</p>
-    </Card>
+
+      {/* ─── Secondary Analytics ────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <motion.div variants={STAGGER.item}>
+          <Card className="glass-panel border-none p-8 flex flex-col items-center justify-center text-center gap-4 bg-gradient-to-br from-luxe-primary/5 to-transparent border-t border-luxe-primary/10">
+             <div className="size-16 rounded-3xl bg-luxe-primary/10 flex items-center justify-center text-luxe-primary">
+                <LayoutGrid className="size-8" />
+             </div>
+             <div>
+                <h4 className="text-xl font-black text-white tracking-tight uppercase italic italic">Inventory <span className="text-luxe-primary">Control</span></h4>
+                <p className="text-xs text-luxe-on-surface-variant font-medium mt-2 leading-relaxed">Manage your premium portfolio sectors and optimize catalog liquidity.</p>
+             </div>
+             <Button variant="outline" className="mt-4 border-luxe-primary/30 text-luxe-primary hover:bg-luxe-primary/10 rounded-xl px-8 uppercase text-[10px] font-black tracking-[0.2em]">
+                Open Catalog <ArrowRight className="size-3 ml-2" />
+             </Button>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={STAGGER.item} className="lg:col-span-2">
+           <ChartBase
+              title="Apex Performers"
+              description="Top performing inventory assets by gross revenue"
+              isLoading={loading}
+           >
+              <ProductBarChart data={data?.charts.productPerformance || []} />
+           </ChartBase>
+        </motion.div>
+      </div>
+    </motion.div>
   );
-}
+}
