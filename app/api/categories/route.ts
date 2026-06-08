@@ -6,7 +6,20 @@ export async function GET(request: Request) {
   try {
     const categories = await prisma.categories.findMany({
       include: {
-        other_categories: true, // subcategories
+        categories: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        _count: {
+          select: {
+            products: true,
+          },
+        },
+      },
+      orderBy: {
+        name: "asc",
       },
     });
 
@@ -35,7 +48,7 @@ export async function POST(request: Request) {
     const category = await prisma.categories.create({
       data: {
         name,
-        parent_id: parent_id ? parseInt(parent_id) : null,
+        parent_id: parent_id ? parseInt(parent_id.toString()) : null,
       },
     });
 

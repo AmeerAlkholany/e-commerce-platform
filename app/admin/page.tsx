@@ -54,6 +54,7 @@ import {
   FileText,
   Crown,
   Star,
+  Layers
 } from "lucide-react";
 
 import {
@@ -657,26 +658,42 @@ export default function AdminPage() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
 
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === "products"}
-                      onClick={() => setActiveTab("products")}
-                      className={cn(
-                        "w-full text-left font-medium tracking-wide transition-all duration-200 py-2.5 px-3 rounded-lg flex items-center justify-between text-sm select-none",
-                        activeTab === "products" 
-                          ? "bg-luxe-primary/10 text-luxe-primary hover:bg-luxe-primary/15" 
-                          : "text-luxe-on-surface-variant hover:text-white hover:bg-luxe-surface-container-high"
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Package className="size-4" />
-                        <span>Inventory Catalog</span>
-                      </div>
-                      <Badge className="bg-luxe-surface-container text-luxe-on-surface-variant text-[10px] px-2 py-0.5 border border-luxe-outline-variant/30">
-                        {products.length}
-                      </Badge>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={activeTab === "products"}
+                        onClick={() => setActiveTab("products")}
+                        className={cn(
+                          "w-full text-left font-medium tracking-wide transition-all duration-200 py-2.5 px-3 rounded-lg flex items-center justify-between text-sm select-none",
+                          activeTab === "products" 
+                            ? "bg-luxe-primary/10 text-luxe-primary hover:bg-luxe-primary/15" 
+                            : "text-luxe-on-surface-variant hover:text-white hover:bg-luxe-surface-container-high"
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Package className="size-4" />
+                          <span>Inventory Catalog</span>
+                        </div>
+                        <Badge className="bg-luxe-surface-container text-luxe-on-surface-variant text-[10px] px-2 py-0.5 border border-luxe-outline-variant/30">
+                          {products.length}
+                        </Badge>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+
+                    <SidebarMenuItem>
+                      <Link href="/admin/categories" className="w-full">
+                        <SidebarMenuButton
+                          className="w-full text-left font-medium tracking-wide transition-all duration-200 py-2.5 px-3 rounded-lg flex items-center justify-between text-sm select-none text-luxe-on-surface-variant hover:text-white hover:bg-luxe-surface-container-high"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Layers className="size-4" />
+                            <span>Categories</span>
+                          </div>
+                          <Badge className="bg-luxe-surface-container text-luxe-on-surface-variant text-[10px] px-2 py-0.5 border border-luxe-outline-variant/30">
+                            {categories.length}
+                          </Badge>
+                        </SidebarMenuButton>
+                      </Link>
+                    </SidebarMenuItem>
 
                   <SidebarMenuItem>
                     <SidebarMenuButton
