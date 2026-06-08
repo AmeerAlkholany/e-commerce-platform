@@ -127,3 +127,126 @@ export const ProductBarChart = ({ data }: { data: any[] }) => (
     </BarChart>
   </ResponsiveContainer>
 );
+export const UserAcquisitionChart = ({ data }: { data: any[] }) => (
+  <ResponsiveContainer width="100%" height="100%">
+    <AreaChart data={data}>
+      <defs>
+        <linearGradient id="userAcquisitionGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor="#C0C0C0" stopOpacity={0.3} />
+          <stop offset="95%" stopColor="#C0C0C0" stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+      <XAxis 
+        dataKey="date" 
+        stroke="#444" 
+        fontSize={10} 
+        tickLine={false} 
+        axisLine={false} 
+        tickFormatter={(v) => v.split("-").slice(2).join("/")} 
+      />
+      <YAxis stroke="#444" fontSize={10} tickLine={false} axisLine={false} />
+      <Tooltip content={<CustomTooltip suffix=" New Users" />} />
+      <Area 
+        type="monotone" 
+        dataKey="users" 
+        stroke="#FFFFFF" 
+        strokeWidth={2} 
+        fillOpacity={1} 
+        fill="url(#userAcquisitionGradient)" 
+      />
+    </AreaChart>
+  </ResponsiveContainer>
+);
+
+export const AOVTrendChart = ({ data }: { data: any[] }) => (
+  <ResponsiveContainer width="100%" height="100%">
+    <AreaChart data={data}>
+      <defs>
+        <linearGradient id="aovTrendGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.2} />
+          <stop offset="95%" stopColor="#D4AF37" stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+      <XAxis 
+        dataKey="date" 
+        stroke="#444" 
+        fontSize={10} 
+        tickLine={false} 
+        axisLine={false} 
+        tickFormatter={(v) => v.split("-").slice(2).join("/")} 
+      />
+      <YAxis 
+        stroke="#444" 
+        fontSize={10} 
+        tickLine={false} 
+        axisLine={false} 
+        tickFormatter={(v) => `$${v}`} 
+      />
+      <Tooltip content={<CustomTooltip prefix="$" />} />
+      <Area 
+        type="stepAfter" 
+        dataKey="aov" 
+        stroke="#D4AF37" 
+        strokeWidth={2} 
+        fillOpacity={1} 
+        fill="url(#aovTrendGradient)" 
+      />
+    </AreaChart>
+  </ResponsiveContainer>
+);
+
+export const StockStatusChart = ({ data }: { data: any[] }) => (
+  <ResponsiveContainer width="100%" height="100%">
+    <PieChart>
+      <Pie
+        data={data}
+        cx="50%"
+        cy="45%"
+        innerRadius={60}
+        outerRadius={80}
+        paddingAngle={5}
+        dataKey="value"
+        stroke="none"
+      >
+        {data.map((entry, index) => (
+          <Cell 
+            key={`cell-${index}`} 
+            fill={entry.name === "Out of Stock" ? "#EF4444" : entry.name === "Low Stock" ? "#F59E0B" : "#10B981"} 
+          />
+        ))}
+      </Pie>
+      <Tooltip content={<CustomTooltip />} />
+      <Legend 
+        verticalAlign="bottom" 
+        height={36} 
+        formatter={(value) => <span className="text-[9px] font-bold uppercase text-luxe-on-surface-variant">{value}</span>}
+      />
+    </PieChart>
+  </ResponsiveContainer>
+);
+export const OrderVolumeChart = ({ data }: { data: any[] }) => (
+  <ResponsiveContainer width="100%" height="100%">
+    <BarChart data={data}>
+      <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+      <XAxis 
+        dataKey="date" 
+        stroke="#444" 
+        fontSize={10} 
+        tickLine={false} 
+        axisLine={false} 
+        tickFormatter={(v) => v.split("-").slice(2).join("/")} 
+      />
+      <YAxis stroke="#444" fontSize={10} tickLine={false} axisLine={false} />
+      <Tooltip content={<CustomTooltip suffix=" Orders" />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
+      <Bar 
+        dataKey="orders" 
+        fill="#FFFFFF" 
+        radius={[4, 4, 0, 0]} 
+        barSize={15} 
+        animationDuration={1500}
+      />
+    </BarChart>
+  </ResponsiveContainer>
+);

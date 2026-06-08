@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
-import { AnalyticsService } from "@/lib/analytics";
+import { AnalyticsService } from "../../../../lib/analytics";
 import { serializeBigInt } from "@/lib/json";
 
 export async function GET() {
   try {
-    const [revenue, trend, categories, products, userStats] = await Promise.all([
+    const [revenue, trend, categories, products, userStats, userTrend, stockStatus] = await Promise.all([
       AnalyticsService.getRevenueStats(),
       AnalyticsService.getSalesTrend(30),
       AnalyticsService.getCategoryPerformance(),
       AnalyticsService.getTopProducts(10),
-      AnalyticsService.getUserStats(30)
+      AnalyticsService.getUserStats(30),
+      AnalyticsService.getUserAcquisitionTrend(30),
+      AnalyticsService.getStockStatus()
     ]);
 
     // Calculate conversion (simulated since we don't have traffic data yet)
@@ -30,6 +32,8 @@ export async function GET() {
           revenueTrend: trend,
           categoryBreakdown: categories,
           productPerformance: products,
+          userTrend,
+          stockStatus
         }
       })
     );

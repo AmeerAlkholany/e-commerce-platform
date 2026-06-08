@@ -1,3 +1,4 @@
+// Luxury Analytics Engine - v2
 import { prisma } from "./prisma";
 
 export interface AnalyticsPeriod {
@@ -63,7 +64,63 @@ export class AnalyticsService {
       }
     });
 
+    return Object.values(trend).map(t => ({
+      ...t,
+      aov: t.orders > 0 ? t.revenue / t.orders : 0
+    })).sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  /**
+   * Get user acquisition trend (daily new users)
+   */
+  static async getUserAcquisitionTrend(days: number = 30) {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const users = await prisma.users.findMany({
+      where: { created_at: { gte: startDate } },
+      select: { created_at: true },
+      orderBy: { created_at: "asc" },
+    });
+
+    const trend: Record<string, { date: string; users: number }> = {};
+    for (let i = 0; i < days; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split("T")[0];
+      trend[key] = { date: key, users: 0 };
+    }
+
+    users.forEach((u) => {
+      if (!u.created_at) return;
+      const key = u.created_at.toISOString().split("T")[0];
+      if (trend[key]) {
+        trend[key].users += 1;
+      }
+    });
+
     return Object.values(trend).sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  /**
+   * Get stock status categorization
+   */
+  static async getStockStatus() {
+    const products = await prisma.products.findMany({
+      select: { stock: true }
+    });
+
+    const status = {
+      inStock: products.filter(p => (p.stock ?? 0) > 10).length,
+      lowStock: products.filter(p => (p.stock ?? 0) > 0 && (p.stock ?? 0) <= 10).length,
+      outOfStock: products.filter(p => (p.stock ?? 0) === 0).length,
+    };
+
+    return [
+      { name: "In Stock", value: status.inStock },
+      { name: "Low Stock", value: status.lowStock },
+      { name: "Out of Stock", value: status.outOfStock },
+    ];
   }
 
   /**
@@ -97,12 +154,8 @@ export class AnalyticsService {
    * Get top performing products
    */
   static async getTopProducts(limit: number = 5) {
-    // This is a heavy query, ideally we'd use raw SQL for performance on large DBs
     const products = await prisma.products.findMany({
       include: {
-        _count: {
-          select: { order_items: true }
-        },
         order_items: {
           select: {
             quantity: true,
@@ -127,7 +180,7 @@ export class AnalyticsService {
   }
 
   /**
-   * Get user acquisition stats
+   * Get user acquisition stats summary
    */
   static async getUserStats(days: number = 30) {
     const startDate = new Date();

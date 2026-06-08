@@ -21,7 +21,10 @@ import { ChartBase } from "@/components/admin/analytics/ChartBase";
 import { 
   RevenueAreaChart, 
   SectorPieChart, 
-  ProductBarChart 
+  ProductBarChart,
+  UserAcquisitionChart,
+  AOVTrendChart,
+  StockStatusChart
 } from "@/components/admin/analytics/IntelligenceCharts";
 
 export default function IntelligenceReports() {
@@ -70,13 +73,25 @@ export default function IntelligenceReports() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <ChartBase title="Revenue Trajectory" description="Temporal fiscal performance analysis" isLoading={loading}>
-          <RevenueAreaChart data={data?.charts.revenueTrend || []} />
+        <ChartBase title="Fiscal Velocity (AOV)" description="Daily average order value trajectory" isLoading={loading}>
+          <AOVTrendChart data={data?.charts.revenueTrend || []} />
         </ChartBase>
 
-        <ChartBase title="Categorical Dominance" description="Inventory exposure & market share distribution" isLoading={loading}>
-          <SectorPieChart data={data?.charts.categoryBreakdown || []} />
+        <ChartBase title="Acquisition Intelligence" description="Daily new user enrollment trends" isLoading={loading}>
+          <UserAcquisitionChart data={data?.charts.userTrend || []} />
         </ChartBase>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <ChartBase title="Inventory Health" description="Stock level distribution across catalog" isLoading={loading}>
+          <StockStatusChart data={data?.charts.stockStatus || []} />
+        </ChartBase>
+        
+        <div className="lg:col-span-2">
+           <ChartBase title="Categorical Dominance" description="Revenue distribution by portfolio sector" isLoading={loading}>
+             <SectorPieChart data={data?.charts.categoryBreakdown || []} />
+           </ChartBase>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
