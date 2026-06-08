@@ -95,7 +95,7 @@ function ToastContainer({ toasts, removeToast }: { toasts: Toast[]; removeToast:
 // ─── Stock Badge ──────────────────────────────────────
 function StockBadge({ stock }: { stock: number }) {
   const status = stock === 0 ? "Out of Stock" : stock <= 5 ? "Low Stock" : "In Stock";
-  const classes = status === "In Stock" ? "bg-luxe-primary/10 text-luxe-primary" : status === "Low Stock" ? "bg-luxe-tertiary-fixed text-luxe-tertiary" : "bg-luxe-error-container text-luxe-on-error-container";
+  const classes = status === "In Stock" ? "bg-luxe-primary/10 text-luxe-primary" : status === "Low Stock" ? "bg-luxe-tertiary-fixed text-luxe-on-tertiary-container" : "bg-luxe-error-container text-luxe-on-error-container";
   return <Badge className={cn("text-[10px] font-bold uppercase py-0.5 px-2 rounded-md", classes)}>{status}</Badge>;
 }
 

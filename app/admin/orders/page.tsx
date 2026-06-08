@@ -43,14 +43,14 @@ function useToast() {
 
 function OrderStatusBadge({ status }: { status: string }) {
   const configs: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
-    pending: { bg: "bg-luxe-tertiary-fixed", text: "text-luxe-tertiary", icon: <Clock className="size-3" /> },
+    pending: { bg: "bg-luxe-tertiary-fixed", text: "text-luxe-on-tertiary", icon: <Clock className="size-3" /> },
     paid: { bg: "bg-luxe-primary/10", text: "text-luxe-primary", icon: <CreditCard className="size-3" /> },
-    shipped: { bg: "bg-blue-100", text: "text-blue-700", icon: <Truck className="size-3" /> },
-    delivered: { bg: "bg-green-100", text: "text-green-700", icon: <CheckCircle2 className="size-3" /> },
-    cancelled: { bg: "bg-luxe-error-container", text: "text-luxe-error", icon: <XCircle className="size-3" /> },
+    shipped: { bg: "bg-sky-500/10", text: "text-sky-400", icon: <Truck className="size-3" /> },
+    delivered: { bg: "bg-emerald-500/10", text: "text-emerald-400", icon: <CheckCircle2 className="size-3" /> },
+    cancelled: { bg: "bg-luxe-error-container", text: "text-luxe-on-error-container", icon: <XCircle className="size-3" /> },
   };
   const config = configs[status] || configs.pending;
-  return <Badge className={cn("text-[10px] font-bold uppercase py-0.5 px-2 rounded-md flex items-center gap-1", config.bg, config.text)}>{config.icon} {status}</Badge>;
+  return <Badge className={cn("text-[10px] font-bold uppercase py-0.5 px-2 rounded-md flex items-center gap-1 border-none", config.bg, config.text)}>{config.icon} {status}</Badge>;
 }
 
 export default function OrdersPage() {
