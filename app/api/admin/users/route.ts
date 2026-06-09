@@ -4,6 +4,7 @@ import { getUserFromRequest } from "@/lib/session";
 import { serializeBigInt } from "@/lib/json";
 import { createUserSchema } from "@/lib/validations/users";
 import { logAuditAction } from "@/lib/audit-logger";
+import { hashPassword } from "@/lib/auth-helpers";
 
 export async function GET(request: Request) {
   try {
@@ -93,11 +94,12 @@ export async function POST(request: Request) {
     // In a real app, you'd hash the password here.
     // For now, I'll use a placeholder or the same verify logic if I can find it.
     // Actually, I should use the same hashing as in signup.
+    const hashedPassword = hashPassword(password);
     const user = await prisma.users.create({
       data: {
         name,
         email: email.toLowerCase(),
-        password_hash: password, // Placeholder: in production hash it!
+        password_hash: hashedPassword,
         role,
         status,
         phone,

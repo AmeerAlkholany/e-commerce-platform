@@ -274,11 +274,26 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
                            />
                         </div>
                         <Button 
-                           onClick={() => {
+                           onClick={async () => {
                               const el = document.getElementById("manual-password") as HTMLInputElement;
                               if (el.value) {
-                                 performAction.mutate({ id: userId, action: "manual-reset", data: { password: el.value } });
-                                 el.value = "";
+                                 try {
+                                    const res = await fetch(`/api/admin/users/${userId}/password`, {
+                                       method: "POST",
+                                       headers: { "Content-Type": "application/json" },
+                                       body: JSON.stringify({ password: el.value })
+                                    });
+                                    if (res.ok) {
+                                       el.value = "";
+                                       // Invert status/refresh if needed, or show success
+                                       alert("Security credentials updated successfully.");
+                                    } else {
+                                       const data = await res.json();
+                                       alert(data.error || "Failed to update password");
+                                    }
+                                 } catch (err) {
+                                    alert("An error occurred during the update sequence.");
+                                 }
                               }
                            }}
                            className="h-12 bg-white/5 text-white hover:bg-luxe-primary hover:text-luxe-on-primary border border-white/10 rounded-xl px-8 font-black text-[10px] uppercase tracking-widest"

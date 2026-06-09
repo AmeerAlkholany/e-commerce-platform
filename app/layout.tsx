@@ -6,6 +6,7 @@ import { ClickSpark } from "@/components/magicui/click-spark";
 import { LenisProvider } from "@/components/lenis-provider";
 import { ClientLayout } from "@/components/ClientLayout";
 import QueryProvider from "@/components/providers/query-provider";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 

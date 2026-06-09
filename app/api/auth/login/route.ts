@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json(
-        { error: "Invalid email or password" },
+        { error: "Invalid email" },
         { status: 401 }
       );
     }
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     const isValidPassword = verifyPassword(password, user.password_hash);
     if (!isValidPassword) {
       return NextResponse.json(
-        { error: "Invalid email or password" },
+        { error: "Invalid password" },
         { status: 401 }
       );
     }

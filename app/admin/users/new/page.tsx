@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useUserActions } from "@/hooks/use-users";
 import { motion } from "framer-motion";
+import { hashPassword } from "@/lib/auth-helpers";
 
 export default function NewUserPage() {
   const router = useRouter();
