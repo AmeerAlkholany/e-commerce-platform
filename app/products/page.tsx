@@ -46,10 +46,10 @@ export default function ProductsPage() {
           fetch("/api/products"),
           fetch("/api/categories")
         ]);
-        
+
         const productsData = await productsRes.json();
         const categoriesData = await categoriesRes.json();
-        
+
         setProducts(productsData);
         setCategories(categoriesData);
       } catch (error) {
@@ -98,7 +98,7 @@ export default function ProductsPage() {
             <span>/</span>
             <span className="text-luxe-primary font-bold">Products</span>
           </nav>
-          
+
           <h1 className="text-[40px] md:text-[52px] font-light leading-none tracking-tight text-luxe-on-surface">
             Curated Catalogue
           </h1>
@@ -111,7 +111,7 @@ export default function ProductsPage() {
       {/* Main Grid Section */}
       <div className="max-w-[1440px] mx-auto px-4 md:px-[64px] py-12">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
-          
+
           {/* Desktop Filters Sidebar - Column 1 */}
           <aside className="hidden lg:block space-y-8">
             <div>
@@ -137,11 +137,10 @@ export default function ProductsPage() {
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`text-left text-sm font-light py-1 px-2.5 rounded-md transition-all ${
-                      selectedCategory === cat
-                        ? "bg-luxe-primary text-luxe-on-primary font-medium"
-                        : "text-luxe-on-surface-variant hover:bg-luxe-accent/5"
-                    }`}
+                    className={`text-left text-sm font-light py-1 px-2.5 rounded-md transition-all ${selectedCategory === cat
+                      ? "bg-luxe-primary text-luxe-on-primary font-medium"
+                      : "text-luxe-on-surface-variant hover:bg-luxe-accent/5"
+                      }`}
                   >
                     {cat}
                   </button>
@@ -169,7 +168,7 @@ export default function ProductsPage() {
                 <span>$2,500</span>
               </div>
             </div>
-            
+
             {/* Promo banner */}
             <div className="glass-panel p-6 rounded-2xl border border-luxe-outline-variant/20 relative overflow-hidden bg-luxe-primary-container/20">
               <h5 className="text-xs font-bold text-luxe-primary tracking-widest uppercase mb-2">Summer Drops</h5>
@@ -181,14 +180,14 @@ export default function ProductsPage() {
 
           {/* Products Grid & Sorting - Column 2-4 (3 columns) */}
           <div className="lg:col-span-3 space-y-8">
-            
+
             {/* Action Bar (Sorting, View, Filter Button on Mobile) */}
             <div className="flex justify-between items-center bg-luxe-surface-container-lowest p-4 rounded-xl border border-luxe-outline-variant/10 shadow-sm flex-wrap gap-4">
               <div className="flex items-center gap-3 text-xs font-semibold text-luxe-on-surface-variant">
                 <SlidersHorizontal className="size-4 lg:hidden cursor-pointer" onClick={() => setIsMobileFilterOpen(true)} />
                 <span>Showing <strong className="text-luxe-on-surface font-bold">{sortedProducts.length}</strong> Products</span>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-semibold text-luxe-on-surface-variant hidden sm:inline">Sort By</span>
@@ -196,7 +195,8 @@ export default function ProductsPage() {
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
-                      className="bg-transparent text-xs font-bold text-luxe-on-surface border border-luxe-outline-variant/20 rounded-md py-1.5 px-3.5 pr-8 appearance-none focus:outline-none focus:ring-1 focus:ring-luxe-primary cursor-pointer"
+                      className="bg-luxe-surface text-xs font-bold text-luxe-on-surface border border-luxe-outline-variant/20 rounded-md py-1.5 px-3.5 pr-8 appearance-none focus:outline-none focus:ring-1 focus:ring-luxe-primary cursor-pointer"
+                    // className="w-full bg-luxe-surface border border-luxe-primary/30 rounded px-2 py-1 text-sm text-white outline-none"
                     >
                       {SORT_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -274,7 +274,7 @@ export default function ProductsPage() {
       {isMobileFilterOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs" onClick={() => setIsMobileFilterOpen(false)} />
-          
+
           <div className="relative w-[80vw] max-w-sm bg-luxe-surface dark:bg-luxe-inverse-surface h-full shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
             <div className="space-y-8">
               <div className="flex justify-between items-center">
@@ -294,11 +294,10 @@ export default function ProductsPage() {
                         setSelectedCategory(cat);
                         setIsMobileFilterOpen(false);
                       }}
-                      className={`text-left text-sm font-light py-2 px-3 rounded-md transition-all ${
-                        selectedCategory === cat
-                          ? "bg-luxe-primary text-luxe-on-primary font-medium"
-                          : "text-luxe-on-surface-variant hover:bg-luxe-accent/5"
-                      }`}
+                      className={`text-left text-sm font-light py-2 px-3 rounded-md transition-all ${selectedCategory === cat
+                        ? "bg-luxe-primary text-luxe-on-primary font-medium"
+                        : "text-luxe-on-surface-variant hover:bg-luxe-accent/5"
+                        }`}
                     >
                       {cat}
                     </button>

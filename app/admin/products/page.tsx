@@ -293,7 +293,7 @@ export default function ProductsPage() {
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setShowAddModal(true)} className="bg-luxe-primary text-luxe-on-primary">
-            <Plus className="size-4 mr-2" /> Add Luxury Item
+            <Plus className="size-4 mr-2" /> Add New Product
           </Button>
         </div>
       </div>
@@ -431,33 +431,34 @@ function AddModal({ onClose, onSubmit, form, setForm, categories, imagePreview, 
             <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Product Name</label>
             <Input required value={form.name} onChange={e => setForm((p: any) => ({ ...p, name: e.target.value }))} placeholder="e.g. Phantom Chronograph" />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Description</label>
-            <textarea value={form.description} onChange={e => setForm((p: any) => ({ ...p, description: e.target.value }))} placeholder="Product details..." rows={2} className="w-full bg-luxe-surface-container border border-luxe-outline-variant/30 rounded-lg px-4 py-2 text-sm text-white outline-none focus:border-luxe-primary resize-none" />
-          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Price ($)</label>
               <Input required type="number" step="0.01" value={form.price} onChange={e => setForm((p: any) => ({ ...p, price: e.target.value }))} placeholder="0.00" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Initial Stock</label>
+              <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Stock</label>
               <Input type="number" value={form.stock} onChange={e => setForm((p: any) => ({ ...p, stock: e.target.value }))} placeholder="0" />
             </div>
           </div>
 
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Category</label>
-            <select value={form.category_id} onChange={e => setForm((p: any) => ({ ...p, category_id: e.target.value }))} className="w-full bg-luxe-surface-container border border-luxe-outline-variant/30 rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-luxe-primary">
+            <select value={form.category_id} onChange={e => setForm((p: any) => ({ ...p, category_id: e.target.value }))} className="w-full bg-luxe-surface-container border border-luxe-outline-variant/30 rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-luxe-primary">
               <option value="">Select Category...</option>
               {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Description</label>
+            <textarea required value={form.description} onChange={e => setForm((p: any) => ({ ...p, description: e.target.value }))} placeholder="Product details..." rows={2} className="w-full bg-luxe-surface-container border border-luxe-outline-variant/30 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-luxe-primary min-h-[100px] max-h-[250px]" />
           </div>
 
 
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Product Media</label>
+            <label className="text-[10px] font-bold tracking-widest text-luxe-on-surface-variant uppercase">Product cover</label>
             <div onClick={() => fileInputRef.current?.click()} className="relative h-32 border border-dashed border-luxe-outline-variant/40 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-luxe-primary/5 hover:border-luxe-primary transition-all overflow-hidden group">
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
               {imagePreview ? (
