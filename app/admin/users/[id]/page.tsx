@@ -23,9 +23,12 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-export default function UserDetailPage({ params }: { params: { id: string } }) {
+import { use } from "react";
+
+export default function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = use(params);
   const router = useRouter();
-  const userId = parseInt(params.id);
+  const userId = parseInt(unwrappedParams.id);
   const { data: user, isLoading } = useUserDetail(userId);
   const { performAction } = useUserActions();
   const [activeTab, setActiveTab] = useState("overview");

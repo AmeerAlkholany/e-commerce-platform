@@ -34,7 +34,7 @@ export function signJWT(payload: any, expiresInSeconds: number = 7 * 24 * 60 * 6
     .createHmac("sha256", JWT_SECRET)
     .update(`${headerB64}.${payloadB64}`)
     .digest();
-  
+
   const signatureB64 = base64urlEncode(signature);
 
   return `${headerB64}.${payloadB64}.${signatureB64}`;
@@ -54,7 +54,7 @@ export function verifyJWT(token: string): any | null {
       .createHmac("sha256", JWT_SECRET)
       .update(`${headerB64}.${payloadB64}`)
       .digest();
-    
+
     const expectedSignatureB64 = base64urlEncode(expectedSignature);
 
     if (signatureB64 !== expectedSignatureB64) {
@@ -62,7 +62,7 @@ export function verifyJWT(token: string): any | null {
     }
 
     const payload = JSON.parse(base64urlDecode(payloadB64));
-    
+
     // Check expiration
     if (payload.exp && Date.now() / 1000 > payload.exp) {
       return null;
@@ -79,7 +79,7 @@ export function verifyJWT(token: string): any | null {
  */
 export async function createSession(user: { id: any; email: string; role: string | null; name: string }) {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  
+
   // Convert BigInt IDs to standard numbers for JSON serialization
   const userId = typeof user.id === "bigint" ? Number(user.id) : user.id;
 
@@ -116,8 +116,8 @@ export async function getUserFromRequest(request?: Request): Promise<{ id: numbe
   // This allows work on the dashboard without manual login during dev.
   if (process.env.NODE_ENV === "development" && process.env.DEV_ADMIN_BYPASS === "true") {
     return {
-      id: 1, // Assumes user with ID 1 is the main admin
-      email: "admin@luxe-global.com",
+      id: 15, // Assumes user with ID 1 is the main admin
+      email: "ahmedahmed1@gmail.com",
       role: "admin",
       name: "Development Admin",
     };
@@ -125,7 +125,6 @@ export async function getUserFromRequest(request?: Request): Promise<{ id: numbe
 
   try {
     let token: string | undefined;
-    // ... rest of the logic
 
     if (request) {
       const cookieHeader = request.headers.get("cookie");
