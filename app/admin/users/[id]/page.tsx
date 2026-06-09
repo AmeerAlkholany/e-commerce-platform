@@ -23,6 +23,8 @@ import { useUserDetail, useUserActions } from "@/hooks/use-users";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { ConfirmModal } from "@/components/admin/ConfirmModal";
 
 import { use } from "react";
 
@@ -34,11 +36,48 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
   const { performAction } = useUserActions();
   const [activeTab, setActiveTab] = useState("overview");
 
+  // Confirmation Modal State
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    variant: "danger" | "warning" | "info";
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    onConfirm: () => {},
+    variant: "danger"
+  });
+
+  const openConfirm = (config: Omit<typeof confirmState, "isOpen">) => {
+    setConfirmState({ ...config, isOpen: true });
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-[60vh]"><p>Loading intelligence data...</p></div>;
   }
 
-  if (!user) return <div>Data not found</div>;
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
+        <div className="size-20 rounded-3xl bg-luxe-error/10 flex items-center justify-center text-luxe-error animate-pulse">
+          <AlertTriangle className="size-10" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-black text-white uppercase italic tracking-tight">Entity Not Located</h2>
+          <p className="text-sm text-luxe-on-surface-variant max-w-xs mx-auto">
+            The user metadata you are attempting to retrieve does not exist or has been purged from the central database.
+          </p>
+        </div>
+        <Button onClick={() => router.push("/admin/users")} variant="outline" className="h-10 border-white/5 rounded-xl px-6 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+          <ChevronLeft className="size-4" />
+          Return to Registry
+        </Button>
+      </div>
+    );
+  }
 
   const tabs = [
     { id: "overview", label: "Overview", icon: UserIcon },
@@ -66,15 +105,41 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
 
         <div className="flex items-center gap-3">
           {user.status === "active" ? (
-             <Button onClick={() => performAction.mutate({ id: userId, action: "suspend" })} variant="outline" className="h-10 border-luxe-tertiary/30 text-luxe-tertiary hover:bg-luxe-tertiary/10 rounded-xl px-4 font-bold text-xs uppercase tracking-widest">
+             <Button 
+                onClick={() => openConfirm({
+                  title: "Confirm Suspension",
+                  description: `You are about to suspend ${user.name}'s access to all platform services. This action will be logged in the governance timeline.`,
+                  variant: "warning",
+                  onConfirm: () => performAction.mutate({ id: userId, action: "suspend" }, { onSuccess: () => toast.warning("Protocol: Account status set to SUSPENDED") })
+                })} 
+                variant="outline" 
+                className="h-10 border-luxe-tertiary/30 text-luxe-tertiary hover:bg-luxe-tertiary/10 rounded-xl px-4 font-bold text-xs uppercase tracking-widest"
+              >
               Suspend Account
             </Button>
           ) : (
-             <Button onClick={() => performAction.mutate({ id: userId, action: "activate" })} className="h-10 bg-luxe-primary text-luxe-on-primary hover:bg-luxe-primary/90 rounded-xl px-4 font-bold text-xs uppercase tracking-widest">
+             <Button 
+                onClick={() => openConfirm({
+                  title: "Reactivate Entity",
+                  description: `Initiating reactivation sequence for ${user.name}. This will restore full access to all platform sectors.`,
+                  variant: "info",
+                  onConfirm: () => performAction.mutate({ id: userId, action: "activate" }, { onSuccess: () => toast.success("Protocol: Account status set to ACTIVE") })
+                })} 
+                className="h-10 bg-luxe-primary text-luxe-on-primary hover:bg-luxe-primary/90 rounded-xl px-4 font-bold text-xs uppercase tracking-widest"
+              >
               Reactivate
             </Button>
           )}
-          <Button variant="ghost" className="h-10 text-luxe-error hover:bg-luxe-error/10 rounded-xl px-4 font-bold text-xs uppercase tracking-widest">
+          <Button 
+            onClick={() => openConfirm({
+               title: "Purge Intelligence Data",
+               description: `Warning: This will permanently delete all records associated with ${user.name}. This process is IRREVERSIBLE and requires Level 5 clearance.`,
+               variant: "danger",
+               onConfirm: () => toast.error("ACCESS DENIED: Data purging requires physical biometric verification at HQ.")
+            })}
+            variant="ghost" 
+            className="h-10 text-luxe-error hover:bg-luxe-error/10 rounded-xl px-4 font-bold text-xs uppercase tracking-widest"
+          >
             Purge Data
           </Button>
         </div>
@@ -188,7 +253,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
                               <p className="text-[11px] text-luxe-on-surface-variant mt-1">Cross-referenced with global verified signatures.</p>
                            </div>
                            {user.verification_status !== "verified" && (
-                              <Button onClick={() => performAction.mutate({ id: userId, action: "verify" })} size="sm" className="ml-auto bg-luxe-primary/10 text-luxe-primary border border-luxe-primary/30 h-8 font-black text-[10px] uppercase">Verify Now</Button>
+                              <Button onClick={() => performAction.mutate({ id: userId, action: "verify" }, { onSuccess: () => toast.success("Entity identity verified.") })} size="sm" className="ml-auto bg-luxe-primary/10 text-luxe-primary border border-luxe-primary/30 h-8 font-black text-[10px] uppercase">Verify Now</Button>
                            )}
                         </div>
                      </Card>
@@ -255,8 +320,8 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
                             </div>
                          </div>
                          <div className="flex flex-col gap-2">
-                            <Button onClick={() => performAction.mutate({ id: userId, action: "reset-password" })} className="bg-luxe-primary text-luxe-on-primary font-black text-[10px] uppercase tracking-widest px-6 h-10 rounded-xl">Trigger Reset Sequence</Button>
-                            <Button variant="outline" className="border-luxe-outline-variant font-black text-[10px] uppercase tracking-widest px-6 h-10 rounded-xl">Revoke Sessions</Button>
+                            <Button onClick={() => performAction.mutate({ id: userId, action: "reset-password" }, { onSuccess: () => toast.info("Reset sequence initiated. Transmission sent.") })} className="bg-luxe-primary text-luxe-on-primary font-black text-[10px] uppercase tracking-widest px-6 h-10 rounded-xl">Trigger Reset Sequence</Button>
+                            <Button variant="outline" onClick={() => toast.info("Session revocation protocols engaged.")} className="border-luxe-outline-variant font-black text-[10px] uppercase tracking-widest px-6 h-10 rounded-xl">Revoke Sessions</Button>
                          </div>
                       </div>
                    </Card>
@@ -285,14 +350,13 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
                                     });
                                     if (res.ok) {
                                        el.value = "";
-                                       // Invert status/refresh if needed, or show success
-                                       alert("Security credentials updated successfully.");
+                                       toast.success("Authority key overridden successfully.");
                                     } else {
                                        const data = await res.json();
-                                       alert(data.error || "Failed to update password");
+                                       toast.error(data.error || "Override sequence failed.");
                                     }
                                  } catch (err) {
-                                    alert("An error occurred during the update sequence.");
+                                    toast.error("An error occurred during the update sequence.");
                                  }
                               }
                            }}
@@ -363,7 +427,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
                    className="space-y-6"
                 >
                    <Card className="glass-panel border-none p-8 bg-luxe-surface/30 rounded-3xl">
-                      <h4 className="text-sm font-black uppercase tracking-widest mb-8">Governance Timeline</h4>
+                      <h4 className="text-sm font-black uppercase tracking-widest mb-8">Audit Logs</h4>
                       <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-luxe-primary/20 before:via-white/5 before:to-transparent">
                          {user.audit_logs_target?.length > 0 ? user.audit_logs_target.map((log: any) => (
                             <div key={log.id} className="relative flex items-center justify-between group">
@@ -399,6 +463,16 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
       </div>
+    
+      <ConfirmModal 
+        isOpen={confirmState.isOpen}
+        onClose={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        description={confirmState.description}
+        variant={confirmState.variant}
+        confirmText="Confirm Protocol"
+      />
     </div>
   );
 }

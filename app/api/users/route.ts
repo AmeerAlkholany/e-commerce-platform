@@ -20,6 +20,11 @@ export async function GET(request: Request) {
         name: true,
         email: true,
         role: true,
+        status: true,
+        verification_status: true,
+        phone: true,
+        avatar_url: true,
+        last_login: true,
         created_at: true,
         addresses: true
       }
@@ -39,7 +44,7 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { userId, name, email } = body;
+    const { userId, name, email, phone, avatar_url } = body;
 
     if (!userId) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
@@ -59,13 +64,20 @@ export async function PUT(request: Request) {
       where: { id: uid },
       data: {
         name: name !== undefined ? name : existingUser.name,
-        email: email !== undefined ? email : existingUser.email
+        email: email !== undefined ? email : existingUser.email,
+        phone: phone !== undefined ? phone : existingUser.phone,
+        avatar_url: avatar_url !== undefined ? avatar_url : existingUser.avatar_url,
       },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
+        status: true,
+        verification_status: true,
+        phone: true,
+        avatar_url: true,
+        last_login: true,
         created_at: true
       }
     });

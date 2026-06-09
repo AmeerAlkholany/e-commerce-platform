@@ -29,6 +29,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // 2.5 Check account status
+    if (user.status === "suspended" || user.status === "banned") {
+      return NextResponse.json(
+        { error: `Account ${user.status}. Please contact support.` },
+        { status: 403 }
+      );
+    }
+
     // 3. Verify password hash
     const isValidPassword = verifyPassword(password, user.password_hash);
     if (!isValidPassword) {
@@ -44,6 +52,12 @@ export async function POST(request: Request) {
       email: user.email,
       role: user.role,
       name: user.name,
+    });
+
+    // 4.5 Update last login
+    await prisma.users.update({
+      where: { id: user.id },
+      data: { last_login: new Date() }
     });
 
     // 5. Respond with user details (omit password hash)

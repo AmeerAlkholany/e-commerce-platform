@@ -66,6 +66,7 @@ export default function RootLayout({
               </ClientLayout>
             </QueryProvider>
           </LenisProvider>
+          <Toaster position="top-right" richColors invert theme="dark" />
         </ClickSpark>
       </body>
     </html>

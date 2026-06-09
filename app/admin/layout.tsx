@@ -45,7 +45,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           fetch("/api/orders?countOnly=true"),
           fetch("/api/categories?countOnly=true")
         ]);
-        
+
         const [prodData, orderData, catData] = await Promise.all([
           prodRes.json(),
           orderRes.json(),
@@ -80,10 +80,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Sidebar className="border-r border-luxe-outline-variant/30 bg-luxe-surface">
           <SidebarHeader className="p-6 border-b border-luxe-outline-variant/20 flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              {/* <span className="text-[10px] font-bold tracking-[0.2em] text-luxe-primary uppercase bg-luxe-primary/10 px-2 py-0.5 rounded-full flex items-center gap-1">
-                <span className="size-1.5 bg-luxe-primary rounded-full animate-ping" />
-                Live Data
-              </span> */}
             </div>
             <div>
               <span className="font-black tracking-tighter text-xl text-white select-none">
@@ -129,9 +125,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </SidebarContent>
 
           <SidebarFooter className="p-4 border-t border-luxe-outline-variant/20 flex flex-col gap-2">
-            <Button 
-              asChild 
-              variant="outline" 
+            <Button
+              asChild
+              variant="outline"
               className="w-full border-luxe-outline-variant bg-transparent text-luxe-on-surface-variant hover:text-white hover:bg-luxe-surface-container-high py-2.5 rounded-lg text-xs font-bold tracking-wider flex items-center justify-center gap-1.5"
             >
               <Link href="/dashboard">
@@ -157,20 +153,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {pathname === "/admin/orders" && "Orders Management"}
                 {pathname === "/admin/users" && "User Management"}
                 {pathname === "/admin/reports" && "Analytics Reports"}
-                {pathname.startsWith("/admin/users/") && "User Details / " + pathname.split("/")[3]}
+                {pathname.startsWith("/admin/users/") && "User Details"}
               </span>
             </div>
-            
+
             <div className="flex items-center gap-4">
-              {/* <div className="flex items-center gap-2">
-                <span className="size-2 bg-luxe-primary rounded-full animate-ping" />
-                <span className="text-[10px] text-luxe-primary font-bold tracking-widest uppercase">Live Connect</span>
-              </div> */}
+
             </div>
           </header>
 
           <main className="flex-1 p-6 md:p-8 space-y-8 max-w-[1440px] w-full mx-auto relative">
-             {children}
+            {children}
           </main>
         </SidebarInset>
       </div>
