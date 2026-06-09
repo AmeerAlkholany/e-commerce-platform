@@ -20,9 +20,14 @@ export async function GET(
     const user = await prisma.users.findUnique({
       where: { id: userId },
       include: {
-        orders: { take: 5, orderBy: { created_at: "desc" } },
-        reviews: { take: 5, orderBy: { created_at: "desc" } },
+        orders: { take: 20, orderBy: { created_at: "desc" } },
+        reviews: { take: 10, orderBy: { created_at: "desc" } },
         addresses: true,
+        audit_logs_target: {
+          take: 50,
+          orderBy: { timestamp: "desc" },
+          include: { actor: { select: { name: true, email: true } } }
+        }
       },
     });
 

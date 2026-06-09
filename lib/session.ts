@@ -112,8 +112,6 @@ export async function deleteSession() {
  * Extracts and decodes the authenticated user payload from the request cookies or next headers.
  */
 export async function getUserFromRequest(request?: Request): Promise<{ id: number; email: string; role: string | null; name: string } | null> {
-  // 1. Development Mode Bypass: Inject a real account session without needing cookies
-  // This allows work on the dashboard without manual login during dev.
   if (process.env.NODE_ENV === "development" && process.env.DEV_ADMIN_BYPASS === "true") {
     return {
       id: 15, // Assumes user with ID 1 is the main admin

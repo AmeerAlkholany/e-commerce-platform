@@ -157,6 +157,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {pathname === "/admin/orders" && "Orders Management"}
                 {pathname === "/admin/users" && "User Management"}
                 {pathname === "/admin/reports" && "Analytics Reports"}
+                {pathname.startsWith("/admin/users/") && "User Details / " + pathname.split("/")[3]}
               </span>
             </div>
             

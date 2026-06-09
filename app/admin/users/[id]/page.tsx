@@ -16,6 +16,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useUserDetail, useUserActions } from "@/hooks/use-users";
@@ -59,7 +60,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
               <h1 className="text-3xl font-black text-white tracking-tight uppercase italic">{user.name}</h1>
               <Badge variant="outline" className="border-luxe-primary/30 text-luxe-primary bg-luxe-primary/5 uppercase text-[10px] py-0.5 px-2 font-black">{user.role}</Badge>
             </div>
-            <p className="text-luxe-on-surface-variant text-sm font-medium">Enterprise Entity ID: PRO-{user.id}</p>
+            <p className="text-luxe-on-surface-variant text-sm font-medium">USR-{user.id}</p>
           </div>
         </div>
 
@@ -259,10 +260,126 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
                          </div>
                       </div>
                    </Card>
+
+                   <Card className="glass-panel border-none p-8 bg-luxe-surface/30 rounded-3xl">
+                      <h4 className="text-sm font-black uppercase tracking-widest mb-6 border-b border-white/5 pb-4">Manual Password Override</h4>
+                      <div className="flex flex-col md:flex-row items-end gap-4">
+                        <div className="flex-1 space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-[0.2em] text-luxe-on-surface-variant ml-1">New Authority Key</label>
+                           <Input 
+                              type="password" 
+                              id="manual-password"
+                              placeholder="Entrust a new secure key..."
+                              className="h-12 bg-luxe-surface border-luxe-outline-variant/40 rounded-xl"
+                           />
+                        </div>
+                        <Button 
+                           onClick={() => {
+                              const el = document.getElementById("manual-password") as HTMLInputElement;
+                              if (el.value) {
+                                 performAction.mutate({ id: userId, action: "manual-reset", data: { password: el.value } });
+                                 el.value = "";
+                              }
+                           }}
+                           className="h-12 bg-white/5 text-white hover:bg-luxe-primary hover:text-luxe-on-primary border border-white/10 rounded-xl px-8 font-black text-[10px] uppercase tracking-widest"
+                        >
+                           Overwrite Key
+                        </Button>
+                      </div>
+                      <p className="text-[10px] text-luxe-on-surface-variant italic mt-4 ml-1">Note: This action bypasses email verification and updates the database record directly.</p>
+                   </Card>
                 </motion.div>
               )}
 
-              {/* Other tabs would follow same pattern */}
+              {activeTab === "orders" && (
+                <motion.div 
+                   key="orders"
+                   initial={{ opacity: 0, x: 10 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   exit={{ opacity: 0, x: -10 }}
+                   className="space-y-6"
+                >
+                   <Card className="glass-panel border-none bg-luxe-surface/30 rounded-3xl overflow-hidden">
+                      <div className="overflow-x-auto">
+                         <table className="w-full text-sm text-left">
+                            <thead className="bg-white/5 border-b border-white/5">
+                               <tr>
+                                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-luxe-on-surface-variant">Order ID</th>
+                                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-luxe-on-surface-variant">Date</th>
+                                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-luxe-on-surface-variant">Status</th>
+                                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-luxe-on-surface-variant text-right">Total</th>
+                               </tr>
+                            </thead>
+                            <tbody>
+                               {user.orders?.length > 0 ? user.orders.map((order: any) => (
+                                  <tr key={order.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                     <td className="px-6 py-4 font-bold text-white uppercase tracking-wider text-xs">#{order.id}</td>
+                                     <td className="px-6 py-4 text-xs text-luxe-on-surface-variant">{new Date(order.created_at).toLocaleDateString()}</td>
+                                     <td className="px-6 py-4">
+                                        <Badge variant="outline" className={cn(
+                                          "text-[9px] uppercase font-bold",
+                                          order.status === "delivered" ? "border-luxe-primary/30 text-luxe-primary bg-luxe-primary/5" : "border-luxe-outline-variant text-luxe-on-surface-variant"
+                                        )}>
+                                           {order.status}
+                                        </Badge>
+                                     </td>
+                                     <td className="px-6 py-4 text-right font-black text-luxe-primary text-xs">
+                                        ${parseFloat(order.total).toLocaleString()}
+                                     </td>
+                                  </tr>
+                               )) : (
+                                  <tr>
+                                     <td colSpan={4} className="px-6 py-20 text-center text-xs text-luxe-on-surface-variant italic">No order data found.</td>
+                                  </tr>
+                               )}
+                            </tbody>
+                         </table>
+                      </div>
+                   </Card>
+                </motion.div>
+              )}
+
+              {activeTab === "activity" && (
+                <motion.div 
+                   key="activity"
+                   initial={{ opacity: 0, x: 10 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   exit={{ opacity: 0, x: -10 }}
+                   className="space-y-6"
+                >
+                   <Card className="glass-panel border-none p-8 bg-luxe-surface/30 rounded-3xl">
+                      <h4 className="text-sm font-black uppercase tracking-widest mb-8">Governance Timeline</h4>
+                      <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-luxe-primary/20 before:via-white/5 before:to-transparent">
+                         {user.audit_logs_target?.length > 0 ? user.audit_logs_target.map((log: any) => (
+                            <div key={log.id} className="relative flex items-center justify-between group">
+                               <div className="flex items-center w-full">
+                                  <div className="flex items-center justify-center size-10 rounded-full bg-luxe-surface border border-luxe-primary/20 text-luxe-primary z-10 shadow-lg shadow-black/40">
+                                     <History className="size-4" />
+                                  </div>
+                                  <div className="ml-6 flex-1">
+                                     <div className="flex items-center justify-between">
+                                        <h5 className="text-xs font-black text-white uppercase tracking-wider italic">
+                                           {log.action_type.replace(/_/g, " ")}
+                                        </h5>
+                                        <span className="text-[10px] font-bold text-luxe-on-surface-variant uppercase tracking-widest">
+                                           {new Date(log.timestamp).toLocaleString()}
+                                        </span>
+                                     </div>
+                                     <p className="text-[11px] text-luxe-on-surface-variant mt-1 font-medium">
+                                        Executed by <span className="text-white">{log.actor.name}</span>
+                                     </p>
+                                  </div>
+                               </div>
+                            </div>
+                         )) : (
+                            <div className="text-center py-20">
+                               <p className="text-xs text-luxe-on-surface-variant italic">No administrative activities recorded.</p>
+                            </div>
+                         )}
+                      </div>
+                   </Card>
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
         </div>

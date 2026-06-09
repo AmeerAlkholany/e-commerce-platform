@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/session";
 import { logAuditAction, AuditAction } from "@/lib/audit-logger";
+import { hashPassword } from "@/lib/auth-helpers";
 
 export async function POST(
   request: Request,
@@ -47,6 +48,12 @@ export async function POST(
         // Simulate email
         console.log(`[SIMULATION] Password reset email sent to ${user.email}`);
         return NextResponse.json({ message: "Password reset instructions sent" });
+      case "manual-reset":
+        if (!body.password) return NextResponse.json({ error: "Password is required" }, { status: 400 });
+        const hashedPassword = hashPassword(body.password);
+        updateData = { password_hash: hashedPassword };
+        auditAction = "PASSWORD_RESET";
+        break;
       case "send-email":
         // Mocking email send
         auditAction = "EMAIL_SENT";
