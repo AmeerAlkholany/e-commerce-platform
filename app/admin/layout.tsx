@@ -27,7 +27,8 @@ import {
   FileText,
   Layers,
   ChevronLeft,
-  Plus
+  Plus,
+  Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -69,6 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Inventory", href: "/admin/products", icon: Package, badge: counts.products },
     { name: "Categories", href: "/admin/categories", icon: Layers, badge: counts.categories },
     { name: "Orders", href: "/admin/orders", icon: ClipboardList, badge: counts.orders },
+    { name: "Users", href: "/admin/users", icon: Users },
     { name: "Reports", href: "/admin/reports", icon: FileText },
   ];
 
@@ -153,6 +155,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {pathname === "/admin/products" && "Inventory Catalog"}
                 {pathname === "/admin/categories" && "Category Management"}
                 {pathname === "/admin/orders" && "Orders Management"}
+                {pathname === "/admin/users" && "User Management"}
                 {pathname === "/admin/reports" && "Analytics Reports"}
               </span>
             </div>

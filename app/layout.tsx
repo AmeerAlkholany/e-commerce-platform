@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { ClickSpark } from "@/components/magicui/click-spark";
 import { LenisProvider } from "@/components/lenis-provider";
 import { ClientLayout } from "@/components/ClientLayout";
+import QueryProvider from "@/components/providers/query-provider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -54,13 +55,15 @@ export default function RootLayout({
           duration={400}
         >
           <LenisProvider>
-            <ClientLayout
-              navLinks={navLinks}
-              quickLinks={quickLinks}
-              legalLinks={legalLinks}
-            >
-              {children}
-            </ClientLayout>
+            <QueryProvider>
+              <ClientLayout
+                navLinks={navLinks}
+                quickLinks={quickLinks}
+                legalLinks={legalLinks}
+              >
+                {children}
+              </ClientLayout>
+            </QueryProvider>
           </LenisProvider>
         </ClickSpark>
       </body>

@@ -10,7 +10,7 @@ import {
   Users,
   Loader2,
   Package,
-  ArrowRight,
+ArrowRight,
   MousePointerClick,
   RefreshCcw,
   Calendar,
