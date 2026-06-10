@@ -34,28 +34,31 @@ import { cn } from "@/lib/utils";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [counts, setCounts] = useState({ products: 0, orders: 0, categories: 0 });
+  const [counts, setCounts] = useState({ products: 0, orders: 0, categories: 0, users: 0 });
 
   useEffect(() => {
     // Fetch counts for badges
     const fetchCounts = async () => {
       try {
-        const [prodRes, orderRes, catRes] = await Promise.all([
+        const [prodRes, orderRes, catRes, userDataRes] = await Promise.all([
           fetch("/api/products?countOnly=true"),
           fetch("/api/orders?countOnly=true"),
-          fetch("/api/categories?countOnly=true")
+          fetch("/api/categories?countOnly=true"),
+          fetch("/api/users?countOnly=true")
         ]);
 
-        const [prodData, orderData, catData] = await Promise.all([
+        const [prodData, orderData, catData, userData] = await Promise.all([
           prodRes.json(),
           orderRes.json(),
-          catRes.json()
+          catRes.json(),
+          userDataRes.json()
         ]);
 
         setCounts({
           products: prodData.count || 0,
           orders: orderData.count || 0,
-          categories: catData.count || 0
+          categories: catData.count || 0,
+          users: userData.count || 0
         });
       } catch (error) {
         console.error("Failed to fetch sidebar counts:", error);
@@ -70,7 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Inventory", href: "/admin/products", icon: Package, badge: counts.products },
     { name: "Categories", href: "/admin/categories", icon: Layers, badge: counts.categories },
     { name: "Orders", href: "/admin/orders", icon: ClipboardList, badge: counts.orders },
-    { name: "Users", href: "/admin/users", icon: Users },
+    { name: "Users", href: "/admin/users", icon: Users, badge: counts.users },
     { name: "Reports", href: "/admin/reports", icon: FileText },
   ];
 

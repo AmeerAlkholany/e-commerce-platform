@@ -6,6 +6,12 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const userIdStr = searchParams.get("userId");
+    const countOnly = searchParams.get("countOnly") === "true";
+
+    if (countOnly) {
+      const count = await prisma.users.count();
+      return NextResponse.json({ count });
+    }
 
     if (!userIdStr) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
