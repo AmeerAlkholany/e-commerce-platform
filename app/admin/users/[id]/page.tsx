@@ -13,7 +13,8 @@ import {
   CheckCircle2,
   Calendar,
   Phone,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +57,15 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
   };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-[60vh]"><p>Loading intelligence data...</p></div>;
+      return (
+         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+           <Loader2 className="size-12 text-luxe-primary animate-spin" />
+           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-luxe-on-surface-variant animate-pulse">Loading intelligence data...</p>
+         </div>
+       );
+   //  return <div className="flex items-center justify-center min-h-[60vh]"><p>Loading intelligence data...</p></div>;
+
+
   }
 
   if (!user) {
