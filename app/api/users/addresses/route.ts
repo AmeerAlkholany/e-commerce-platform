@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/json";
+import { createAddressSchema } from "@/lib/validations/addresses";
 
 export async function GET(request: Request) {
   try {
@@ -22,8 +23,20 @@ export async function GET(request: Request) {
       );
     }
 
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
     const addresses = await prisma.addresses.findMany({
       where: { user_id: userId },
+      orderBy: { id: "asc" },
     });
 
     return NextResponse.json(serializeBigInt(addresses));
@@ -39,26 +52,20 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userId, street, city, country } = body;
+    const result = createAddressSchema.safeParse(body);
     
-    if (!userId) {
-       return NextResponse.json(
-        { error: "userId is required" },
+    if (!result.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: result.error.format() },
         { status: 400 }
       );
     }
 
-    const uid = parseInt(userId, 10);
-    if (isNaN(uid)) {
-      return NextResponse.json(
-        { error: "Invalid userId" },
-        { status: 400 }
-      );
-    }
+    const { userId, street, city, country } = result.data;
 
     // Check if user exists
     const user = await prisma.users.findUnique({
-      where: { id: uid },
+      where: { id: userId },
     });
 
     if (!user) {
@@ -70,7 +77,7 @@ export async function POST(request: Request) {
 
     const address = await prisma.addresses.create({
       data: {
-        user_id: uid,
+        user_id: userId,
         street,
         city,
         country,
@@ -86,3 +93,4 @@ export async function POST(request: Request) {
     );
   }
 }
+
