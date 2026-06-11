@@ -28,28 +28,31 @@ import {
   Layers,
   ChevronLeft,
   Plus,
-  Users
+  Users,
+  CreditCard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [counts, setCounts] = useState({ products: 0, orders: 0, categories: 0, users: 0 });
+  const [counts, setCounts] = useState({ products: 0, orders: 0, categories: 0, users: 0, payments: 0 });
 
   useEffect(() => {
     // Fetch counts for badges
     const fetchCounts = async () => {
       try {
-        const [prodRes, orderRes, catRes, userDataRes] = await Promise.all([
+        const [prodRes, orderRes, payRes, catRes, userDataRes] = await Promise.all([
           fetch("/api/products?countOnly=true"),
           fetch("/api/orders?countOnly=true"),
+          fetch("/api/payments?countOnly=true"),
           fetch("/api/categories?countOnly=true"),
           fetch("/api/users?countOnly=true")
         ]);
 
-        const [prodData, orderData, catData, userData] = await Promise.all([
+        const [prodData, orderData, payData, catData, userData] = await Promise.all([
           prodRes.json(),
           orderRes.json(),
+          payRes.json(),
           catRes.json(),
           userDataRes.json()
         ]);
@@ -57,6 +60,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         setCounts({
           products: prodData.count || 0,
           orders: orderData.count || 0,
+          payments: payData.count || 0,
           categories: catData.count || 0,
           users: userData.count || 0
         });
@@ -73,6 +77,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Inventory", href: "/admin/products", icon: Package, badge: counts.products },
     { name: "Categories", href: "/admin/categories", icon: Layers, badge: counts.categories },
     { name: "Orders", href: "/admin/orders", icon: ClipboardList, badge: counts.orders },
+    { name: "Payments", href: "/admin/payments", icon: CreditCard, badge: counts.payments },
     { name: "Users", href: "/admin/users", icon: Users, badge: counts.users },
     { name: "Reports", href: "/admin/reports", icon: FileText },
   ];
@@ -154,6 +159,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {pathname === "/admin/products" && "Inventory Catalog"}
                 {pathname === "/admin/categories" && "Category Management"}
                 {pathname === "/admin/orders" && "Orders Management"}
+                {pathname === "/admin/payments" && "Transaction Ledger"}
                 {pathname === "/admin/users" && "User Management"}
                 {pathname === "/admin/reports" && "Analytics Reports"}
                 {pathname.startsWith("/admin/users/") && "User Details"}
