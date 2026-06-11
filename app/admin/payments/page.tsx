@@ -18,9 +18,10 @@ import {
   Clock,
   ArrowRightLeft,
   ExternalLink,
-  DollarSign
+  DollarSign  
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 // --- Types ---
 interface User { id: number; name: string; email: string; }
@@ -214,10 +215,12 @@ export default function PaymentsPage() {
                           </div>
                         </td>
                         <td className="py-5 px-6">
+                          <Link href={`/admin/orders/${p.orders.id}`}>
                           <div className="flex items-center gap-1.5 font-mono text-[11px] text-luxe-primary font-bold">
                             ORD-{p.orders.id}
                             <ExternalLink className="size-2.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
+                          </Link>
                         </td>
                         <td className="py-5 px-6">
                           <select 

@@ -18,7 +18,8 @@ import {
   Loader2,
   MapPin,
   RefreshCcw,
-  Link as LinkIcon
+  Link as LinkIcon,
+  ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -480,9 +481,10 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
                             <tr key={order.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                               <td className="px-6 py-4 font-bold text-white uppercase tracking-wider text-xs">
 
-                                <Link href={`/admin/orders`} className="hover:text-luxe-primary transition-colors" >
-                                  <div>
-                                    <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-luxe-primary/30 text-luxe-primary bg-luxe-primary/5 mb-2 px-2 py-0.5">Order ID: #{order.id}</Badge>
+                                <Link href={`/admin/orders/${order.id}`} className="group">
+                                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-luxe-primary font-bold">
+                                    ORD-{order.id}
+                                    <ExternalLink className="size-2.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                                   </div>
                                 </Link>
                               </td>

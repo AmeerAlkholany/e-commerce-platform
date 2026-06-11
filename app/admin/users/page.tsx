@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Download, RefreshCcw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Download, RefreshCcw, ChevronLeft, ChevronRight, LayoutDashboard, LayoutList } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { UserStats } from "@/components/admin/users/UserStats";
 import { UserFilters } from "@/components/admin/users/UserFilters";
 import { UserTable } from "@/components/admin/users/UserTable";
 import { useUsers } from "@/hooks/use-users";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export default function UsersManagementPage() {
@@ -22,6 +22,7 @@ export default function UsersManagementPage() {
     sortKey: "created_at",
     sortDir: "desc",
   });
+  const [showStats, setShowStats] = useState(false);
 
   const { data, isLoading, refetch } = useUsers(filters);
 
@@ -77,6 +78,18 @@ export default function UsersManagementPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Button 
+            onClick={() => setShowStats(!showStats)} 
+            variant="outline" 
+            className={cn(
+              "h-11 border-luxe-outline-variant bg-white/5 rounded-xl px-4 font-bold text-xs uppercase tracking-widest transition-all",
+              showStats ? "text-luxe-primary border-luxe-primary/30 bg-luxe-primary/5" : "text-luxe-on-surface-variant hover:text-white"
+            )}
+            title={showStats ? "Hide Dashboard Overview" : "Show Dashboard Overview"}
+          >
+            {showStats ? <LayoutList className="size-4 mr-2" /> : <LayoutDashboard className="size-4 mr-2" />}
+            {showStats ? "Compact View" : "Analytics"}
+          </Button>
           <Button onClick={handleExport} variant="outline" className="h-11 border-luxe-outline-variant bg-white/5 text-white hover:bg-white/10 rounded-xl px-6 font-bold text-xs uppercase tracking-widest">
             <Download className="size-4 mr-2 text-luxe-primary" /> Export Data
           </Button>
@@ -89,7 +102,18 @@ export default function UsersManagementPage() {
       </div>
 
       {/* Stats */}
-      <UserStats />
+      <AnimatePresence>
+        {showStats && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+            animate={{ opacity: 1, height: "auto", marginTop: 32 }}
+            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+            className="overflow-hidden"
+          >
+            <UserStats />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <Card className="glass-panel border-none shadow-2xl rounded-3xl overflow-hidden bg-luxe-surface/40">

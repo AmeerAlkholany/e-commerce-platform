@@ -150,20 +150,49 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="flex items-center gap-3">
               <SidebarTrigger className="text-luxe-on-surface hover:bg-luxe-surface-container size-9" />
               <div className="h-4 w-px bg-luxe-outline-variant/30" />
-              <span className="text-[12px] font-semibold text-luxe-on-surface-variant/80 tracking-wider">
+              <span className="text-[12px] font-semibold text-luxe-on-surface-variant/80 tracking-[0.15em] hover:text-white transition-colors cursor-default select-none">
                 ADMIN CONSOLE
               </span>
-              <span className="text-luxe-on-surface-variant/40">/</span>
-              <span className="text-[12px] font-bold text-white uppercase tracking-wider">
-                {pathname === "/admin" && "Performance Overview"}
-                {pathname === "/admin/products" && "Inventory Catalog"}
-                {pathname === "/admin/categories" && "Category Management"}
-                {pathname === "/admin/orders" && "Orders Management"}
-                {pathname === "/admin/payments" && "Transaction Ledger"}
-                {pathname === "/admin/users" && "User Management"}
-                {pathname === "/admin/reports" && "Analytics Reports"}
-                {pathname.startsWith("/admin/users/") && "User Details"}
-              </span>
+              
+              {pathname.split("/").filter(Boolean).map((segment, index, array) => {
+                const isLast = index === array.length - 1;
+                const path = `/${array.slice(0, index + 1).join("/")}`;
+                
+                // Title Mapping for Pretty Breadcrumbs
+                const labels: Record<string, string> = {
+                  admin: "Console",
+                  products: "Inventory",
+                  categories: "Categories",
+                  orders: "Orders",
+                  payments: "Transactions",
+                  users: "Registry",
+                  reports: "Analytics",
+                };
+
+                const label = labels[segment] || segment.toUpperCase();
+                const isId = !isNaN(Number(segment));
+
+                return (
+                  <React.Fragment key={path}>
+                    <span className="text-luxe-on-surface-variant/30 select-none font-light">/</span>
+                    {isLast ? (
+                      <span className={cn(
+                        "text-[12px] font-black uppercase tracking-widest",
+                        isId ? "text-luxe-primary font-mono" : "text-white"
+                      )}>
+                        {isId ? `#${segment.padStart(4, '0')}` : label}
+                      </span>
+                    ) : (
+                      <Link 
+                        href={path} 
+                        className="text-[12px] font-bold text-luxe-on-surface-variant/60 hover:text-luxe-primary uppercase tracking-widest transition-all hover:translate-x-0.5"
+                      >
+                        {label}
+                      </Link>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </div>
 
             <div className="flex items-center gap-4">

@@ -20,8 +20,10 @@ import {
   Clock,
   CreditCard,
   Package,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 // ─── Types ─────────────────────────────────────────────
 interface OrderUser { id: number; name: string; email: string; }
@@ -61,7 +63,6 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const pageSize = 10;
-  const [showDetail, setShowDetail] = useState<Order | null>(null);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   useEffect(() => { fetchOrders(); }, [statusFilter]);
@@ -87,7 +88,6 @@ export default function OrdersPage() {
       if (!res.ok) throw new Error("Failed");
       const updated = await res.json();
       setOrders(prev => prev.map(o => o.id === id ? updated : o));
-      if (showDetail?.id === id) setShowDetail(updated);
       addToast(`Order #${id} updated`, "success");
     } catch (e: any) { addToast(e.message, "error"); }
     finally { setUpdatingId(null); }
@@ -134,7 +134,14 @@ export default function OrdersPage() {
                 <tbody>
                   {paginated.map(o => (
                     <tr key={o.id} className="border-b border-luxe-outline-variant/10 hover:bg-luxe-surface-container/10 transition-all">
-                      <td className="py-4 px-6 font-mono text-xs">ORDER-{o.id}</td>
+                      <td className="py-4 px-6 font-mono text-xs">
+                      <Link href={`/admin/orders/${o.id}`} className="group">
+                        <div className="flex items-center gap-1.5 font-mono text-[11px] text-luxe-primary font-bold">
+                          ORD-{o.id}
+                          <ExternalLink className="size-2.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      </Link>
+                      </td>
                       <td className="py-4 px-6">
                         <div className="flex flex-col">
                           <span className="text-white font-semibold">{o.users?.name || "Guest"}</span>
@@ -146,7 +153,11 @@ export default function OrdersPage() {
                       <td className="py-4 px-6"><OrderStatusBadge status={o.status} /></td>
                       <td className="py-4 px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => setShowDetail(o)} className="text-luxe-primary hover:bg-luxe-primary/10 h-8 px-3"><Eye className="size-4" /></Button>
+                          <Button asChild variant="ghost" size="sm" className="text-luxe-primary hover:bg-luxe-primary/10 h-8 px-3">
+                            <Link href={`/admin/orders/${o.id}`}>
+                              <Eye className="size-4" />
+                            </Link>
+                          </Button>
                           <select value={o.status} onChange={e => updateStatus(o.id, e.target.value)} disabled={updatingId === o.id} className="bg-luxe-surface border border-luxe-outline-variant/30 text-[10px] uppercase font-bold py-1 px-2 rounded outline-none focus:border-luxe-primary">
                             {["pending", "paid", "shipped", "delivered", "cancelled"].map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
@@ -169,64 +180,6 @@ export default function OrdersPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* Detail Modal */}
-      <AnimatePresence>
-        {showDetail && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowDetail(null)}>
-            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="bg-luxe-surface border border-luxe-outline-variant/30 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-              <div className="p-6 border-b border-luxe-outline-variant/20 flex items-center justify-between">
-                <h3 className="text-xl font-bold text-white tracking-tight">Acquisition Detail <span className="text-luxe-primary ml-2 font-mono">#ORDER-{showDetail.id}</span></h3>
-                <button onClick={() => setShowDetail(null)} className="text-luxe-on-surface-variant hover:text-white"><X className="size-5" /></button>
-              </div>
-              <div className="p-6 space-y-8">
-                <div className="grid grid-cols-2 gap-8">
-                  <div>
-                    <p className="text-[10px] font-bold text-luxe-on-surface-variant uppercase tracking-widest mb-2">Acquirer Information</p>
-                    <div className="bg-luxe-surface-container/20 p-4 rounded-xl border border-luxe-outline-variant/10">
-                      <p className="text-white font-bold">{showDetail.users?.name}</p>
-                      <p className="text-sm text-luxe-on-surface-variant">{showDetail.users?.email}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-luxe-on-surface-variant uppercase tracking-widest mb-2">Acquisition Status</p>
-                    <div className="bg-luxe-surface-container/20 p-4 rounded-xl border border-luxe-outline-variant/10">
-                      <OrderStatusBadge status={showDetail.status} />
-                      <p className="text-xs text-luxe-on-surface-variant mt-2">Initialized: {new Date(showDetail.created_at).toLocaleString()}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[10px] font-bold text-luxe-on-surface-variant uppercase tracking-widest mb-4">Inventory Manifest</p>
-                  <div className="space-y-3">
-                    {showDetail.order_items.map(item => (
-                      <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-luxe-surface-container/30 border border-luxe-outline-variant/10">
-                        <div className="flex items-center gap-3">
-                          <div className="size-12 rounded-lg bg-luxe-surface overflow-hidden border border-luxe-outline-variant/20">
-                            {item.products.image_url ? <img src={item.products.image_url} className="w-full h-full object-cover" /> : <Package className="size-6 text-luxe-outline-variant m-3" />}
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-white tracking-wide">{item.products.name}</p>
-                            <p className="text-[11px] text-luxe-on-surface-variant">${Number(item.price).toLocaleString()} × {item.quantity}</p>
-                          </div>
-                        </div>
-                        <p className="text-sm font-bold text-luxe-primary">${(Number(item.price) * item.quantity).toLocaleString()}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-6 border-t border-luxe-outline-variant/20 flex flex-col items-end gap-1">
-                  <p className="text-[10px] font-bold text-luxe-on-surface-variant uppercase tracking-widest">Total Transaction Value</p>
-                  <p className="text-3xl font-black text-white">${Number(showDetail.total).toLocaleString()}</p>
-                  {showDetail.payments?.[0] && <p className="text-xs text-luxe-primary font-bold uppercase tracking-widest mt-1">Payment: {showDetail.payments[0].method} ({showDetail.payments[0].status})</p>}
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
