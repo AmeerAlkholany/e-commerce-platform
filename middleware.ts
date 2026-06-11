@@ -25,7 +25,7 @@ if (process.env.NODE_ENV === "development" && process.env.DEV_ADMIN_BYPASS === "
 
   // 4. Verify JWT and check role
   try {
-    const payload = verifyJWT(session);
+    const payload = await verifyJWT(session);
     if (!payload || payload.role !== "admin") {
       // Forbidden if not admin
       return NextResponse.redirect(new URL("/", request.url));

@@ -11,9 +11,9 @@ export async function GET(request: Request) {
 
     if (countOnly) {
       const count = await prisma.payments.count({
-        where: {
-          status: "pending"
-        }
+        // where: {
+        //   status: "pending"
+        // }
       });
       return NextResponse.json({ count });
     }

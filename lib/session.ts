@@ -1,67 +1,91 @@
 import { cookies } from "next/headers";
-import crypto from "crypto";
 
 const JWT_SECRET = process.env.SESSION_SECRET || "default_session_secret_key_at_least_32_characters_long_for_security";
 
-function base64urlEncode(str: string | Buffer): string {
-  const buf = typeof str === "string" ? Buffer.from(str) : str;
-  return buf.toString("base64")
+/**
+ * Base64URL encoding/decoding using standard Web APIs for Edge compatibility.
+ */
+function base64urlEncode(data: Uint8Array): string {
+  const base64 = btoa(String.fromCharCode(...data));
+  return base64
     .replace(/=/g, "")
     .replace(/\+/g, "-")
     .replace(/\//g, "_");
 }
 
-function base64urlDecode(str: string): string {
+function base64urlDecode(str: string): Uint8Array {
   let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
   while (base64.length % 4) {
     base64 += "=";
   }
-  return Buffer.from(base64, "base64").toString("utf8");
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
 }
 
 /**
- * Signs a payload to generate a JWT token (HS256).
+ * Signs a payload using Web Crypto API for Edge Runtime compatibility.
  */
-export function signJWT(payload: any, expiresInSeconds: number = 7 * 24 * 60 * 60): string {
+export async function signJWT(payload: any, expiresInSeconds: number = 7 * 24 * 60 * 60): Promise<string> {
   const header = { alg: "HS256", typ: "JWT" };
   const exp = Math.floor(Date.now() / 1000) + expiresInSeconds;
   const fullPayload = { ...payload, exp };
 
-  const headerB64 = base64urlEncode(JSON.stringify(header));
-  const payloadB64 = base64urlEncode(JSON.stringify(fullPayload));
+  const encoder = new TextEncoder();
+  const headerB64 = base64urlEncode(encoder.encode(JSON.stringify(header)));
+  const payloadB64 = base64urlEncode(encoder.encode(JSON.stringify(fullPayload)));
 
-  const signature = crypto
-    .createHmac("sha256", JWT_SECRET)
-    .update(`${headerB64}.${payloadB64}`)
-    .digest();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(JWT_SECRET),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
 
-  const signatureB64 = base64urlEncode(signature);
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(`${headerB64}.${payloadB64}`)
+  );
+
+  const signatureB64 = base64urlEncode(new Uint8Array(signature));
 
   return `${headerB64}.${payloadB64}.${signatureB64}`;
 }
 
 /**
- * Verifies a JWT token (HS256) and returns its payload if valid.
+ * Verifies a JWT token using Web Crypto API for Edge Runtime compatibility.
  */
-export function verifyJWT(token: string): any | null {
+export async function verifyJWT(token: string): Promise<any | null> {
   try {
     const parts = token.split(".");
     if (parts.length !== 3) return null;
 
     const [headerB64, payloadB64, signatureB64] = parts;
+    const encoder = new TextEncoder();
 
-    const expectedSignature = crypto
-      .createHmac("sha256", JWT_SECRET)
-      .update(`${headerB64}.${payloadB64}`)
-      .digest();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(JWT_SECRET),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["verify"]
+    );
 
-    const expectedSignatureB64 = base64urlEncode(expectedSignature);
+    const isValid = await crypto.subtle.verify(
+      "HMAC",
+      key,
+      base64urlDecode(signatureB64),
+      encoder.encode(`${headerB64}.${payloadB64}`)
+    );
 
-    if (signatureB64 !== expectedSignatureB64) {
-      return null;
-    }
+    if (!isValid) return null;
 
-    const payload = JSON.parse(base64urlDecode(payloadB64));
+    const payload = JSON.parse(new TextDecoder().decode(base64urlDecode(payloadB64)));
 
     // Check expiration
     if (payload.exp && Date.now() / 1000 > payload.exp) {
@@ -83,7 +107,7 @@ export async function createSession(user: { id: any; email: string; role: string
   // Convert BigInt IDs to standard numbers for JSON serialization
   const userId = typeof user.id === "bigint" ? Number(user.id) : user.id;
 
-  const sessionToken = signJWT({
+  const sessionToken = await signJWT({
     userId,
     email: user.email,
     role: user.role,
@@ -114,7 +138,7 @@ export async function deleteSession() {
 export async function getUserFromRequest(request?: Request): Promise<{ id: number; email: string; role: string | null; name: string } | null> {
   if (process.env.NODE_ENV === "development" && process.env.DEV_ADMIN_BYPASS === "true") {
     return {
-      id: 15, // Assumes user with ID 1 is the main admin
+      id: 15, // Assumes user with ID 15 is the main admin
       email: "ahmedahmed1@gmail.com",
       role: "admin",
       name: "Development Admin",
@@ -143,7 +167,7 @@ export async function getUserFromRequest(request?: Request): Promise<{ id: numbe
       return null;
     }
 
-    const payload = verifyJWT(token);
+    const payload = await verifyJWT(token);
     if (!payload || (typeof payload.userId !== "number" && typeof payload.userId !== "string")) {
       return null;
     }
