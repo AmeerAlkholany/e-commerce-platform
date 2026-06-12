@@ -43,11 +43,11 @@ export default function UsersManagementPage() {
     if (!data?.users) return;
     const headers = ["ID", "Name", "Email", "Role", "Status", "Joined"];
     const rows = data.users.map((u: any) => [
-      u.id, 
-      `"${u.name}"`, 
-      u.email, 
-      u.role, 
-      u.status, 
+      u.id,
+      `"${u.name}"`,
+      u.email,
+      u.role,
+      u.status,
       new Date(u.created_at).toLocaleDateString()
     ]);
     const csv = [headers.join(","), ...rows.map((r: any) => r.join(","))].join("\n");
@@ -61,7 +61,7 @@ export default function UsersManagementPage() {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8 pb-20"
@@ -78,9 +78,9 @@ export default function UsersManagementPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button 
-            onClick={() => setShowStats(!showStats)} 
-            variant="outline" 
+          <Button
+            onClick={() => setShowStats(!showStats)}
+            variant="outline"
             className={cn(
               "h-11 border-luxe-outline-variant bg-white/5 rounded-xl px-4 font-bold text-xs uppercase tracking-widest transition-all",
               showStats ? "text-luxe-primary border-luxe-primary/30 bg-luxe-primary/5" : "text-luxe-on-surface-variant hover:text-white"
@@ -93,9 +93,9 @@ export default function UsersManagementPage() {
           <Button onClick={handleExport} variant="outline" className="h-11 border-luxe-outline-variant bg-white/5 text-white hover:bg-white/10 rounded-xl px-6 font-bold text-xs uppercase tracking-widest">
             <Download className="size-4 mr-2 text-luxe-primary" /> Export Data
           </Button>
-          <Link href="/admin/users/new">
+          <Link href="/admin/users/new-user">
             <Button className="h-11 bg-luxe-primary text-luxe-on-primary hover:bg-luxe-primary/90 rounded-xl px-6 font-bold text-xs uppercase tracking-widest">
-              <Plus className="size-4 mr-2" /> Invite User
+              <Plus className="size-4 mr-2" /> Add User
             </Button>
           </Link>
         </div>
@@ -129,7 +129,7 @@ export default function UsersManagementPage() {
               </Button>
             </div>
           </div>
-          
+
           <div className="mt-8">
             <UserFilters filters={filters} setFilters={setFilters} onReset={handleReset} />
           </div>
@@ -137,7 +137,7 @@ export default function UsersManagementPage() {
 
         <CardContent className="p-0">
           <UserTable users={data?.users || []} isLoading={isLoading} />
-          
+
           {/* Pagination */}
           {data?.pagination && data.pagination.totalPages > 1 && (
             <div className="flex items-center justify-between px-8 py-6 border-t border-luxe-outline-variant/10 bg-luxe-surface-container/20">
@@ -145,9 +145,9 @@ export default function UsersManagementPage() {
                 Page {data.pagination.page} of {data.pagination.totalPages} <span className="opacity-40">•</span> {data.pagination.total} ENTITIES
               </span>
               <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   disabled={data.pagination.page === 1}
                   onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
                   className="h-10 w-10 p-0 border-luxe-outline-variant bg-transparent rounded-xl hover:bg-luxe-primary/10"
@@ -166,9 +166,9 @@ export default function UsersManagementPage() {
                     />
                   ))}
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   disabled={data.pagination.page === data.pagination.totalPages}
                   onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
                   className="h-10 w-10 p-0 border-luxe-outline-variant bg-transparent rounded-xl hover:bg-luxe-primary/10"

@@ -292,7 +292,7 @@ export default function ProductsPage() {
         <div>
           <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
             Inventory <span className="text-luxe-primary">Catalog</span>
-          </h1>
+          </h1> 
           <p className="text-luxe-on-surface-variant text-sm mt-1 font-medium tracking-wide">
             Manage your luxury product collection.
           </p>

@@ -184,7 +184,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         "text-[12px] font-black uppercase tracking-widest",
                         isId ? "text-luxe-primary font-mono" : "text-white"
                       )}>
-                        {isId ? `#${segment.padStart(4, '0')}` : label}
+                        {isId ? `#${segment.padStart(4, '0')}` : label.replace("-", " ") }
                       </span>
                     ) : (
                       <Link 
