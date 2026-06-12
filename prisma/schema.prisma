@@ -117,16 +117,38 @@ model reviews {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model users {
-  id            Int         @id @default(autoincrement())
-  name          String      @db.VarChar(100)
-  email         String      @unique @db.VarChar(150)
-  password_hash String      @db.VarChar(255)
-  role          user_role?  @default(customer)
-  created_at    DateTime?   @default(now()) @db.Timestamp(6)
-  addresses     addresses[]
-  carts         carts?
-  orders        orders[]
-  reviews       reviews[]
+  id                  Int                 @id @default(autoincrement())
+  name                String              @db.VarChar(100)
+  email               String              @unique @db.VarChar(150)
+  password_hash       String              @db.VarChar(255)
+  role                user_role?          @default(customer)
+  status              user_status?        @default(active)
+  verification_status verification_status? @default(unverified)
+  phone               String?             @db.VarChar(20)
+  avatar_url          String?             @db.VarChar(255)
+  last_login          DateTime?           @db.Timestamp(6)
+  created_at          DateTime?           @default(now()) @db.Timestamp(6)
+  addresses           addresses[]
+  carts               carts?
+  orders              orders[]
+  reviews             reviews[]
+  audit_logs_actor    audit_logs[]        @relation("actor")
+  audit_logs_target   audit_logs[]        @relation("target")
+}
+
+model audit_logs {
+  id              Int       @id @default(autoincrement())
+  actor_id        Int?
+  target_id       Int?
+  action_type     String    @db.VarChar(50)
+  entity_type     String    @db.VarChar(50)
+  previous_values Json?
+  new_values      Json?
+  ip_address      String?   @db.VarChar(45)
+  user_agent      String?
+  timestamp       DateTime? @default(now()) @db.Timestamp(6)
+  actor           users?    @relation("actor", fields: [actor_id], references: [id])
+  target          users?    @relation("target", fields: [target_id], references: [id])
 }
 
 enum order_status {
@@ -152,4 +174,15 @@ enum payment_status {
 enum user_role {
   admin
   customer
+}
+
+enum user_status {
+  active
+  suspended
+  banned
+}
+
+enum verification_status {
+  unverified
+  verified
 }

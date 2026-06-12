@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/json";
+import { updateAddressSchema } from "@/lib/validations/addresses";
 
 interface RouteParams {
   params: Promise<{ addressId: string }>;
@@ -11,16 +12,14 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const resolvedParams = await params;
     const addressId = parseInt(resolvedParams.addressId, 10);
     const body = await request.json();
-    const { userId, street, city, country } = body;
+    const result = updateAddressSchema.safeParse(body);
 
-    if (!userId) {
+    if (!result.success) {
       return NextResponse.json(
-        { error: "userId is required for ownership verification" },
+        { error: "Validation failed", details: result.error.format() },
         { status: 400 }
       );
     }
-
-    const uid = parseInt(userId, 10);
 
     // Verify existence
     const existingAddress = await prisma.addresses.findUnique({
@@ -34,21 +33,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Verify ownership
-    if (existingAddress.user_id !== uid) {
-      return NextResponse.json(
-        { error: "Unauthorized: You can only update your own addresses" },
-        { status: 403 }
-      );
-    }
-
     const updatedAddress = await prisma.addresses.update({
       where: { id: addressId },
-      data: {
-        street: street !== undefined ? street : existingAddress.street,
-        city: city !== undefined ? city : existingAddress.city,
-        country: country !== undefined ? country : existingAddress.country,
-      },
+      data: result.data,
     });
 
     return NextResponse.json(serializeBigInt(updatedAddress));
@@ -66,18 +53,6 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     const resolvedParams = await params;
     const addressId = parseInt(resolvedParams.addressId, 10);
     
-    const { searchParams } = new URL(request.url);
-    const userIdStr = searchParams.get("userId");
-
-    if (!userIdStr) {
-      return NextResponse.json(
-        { error: "userId is required for verification" },
-        { status: 400 }
-      );
-    }
-
-    const userId = parseInt(userIdStr, 10);
-
     const existingAddress = await prisma.addresses.findUnique({
       where: { id: addressId },
     });
@@ -86,13 +61,6 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       return NextResponse.json(
         { error: "Address not found" },
         { status: 404 }
-      );
-    }
-
-    if (existingAddress.user_id !== userId) {
-      return NextResponse.json(
-        { error: "Unauthorized: You can only delete your own addresses" },
-        { status: 403 }
       );
     }
 
@@ -109,3 +77,4 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     );
   }
 }
+

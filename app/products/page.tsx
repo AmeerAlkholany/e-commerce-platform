@@ -1,102 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ProductCard } from "@/components/ProductCard";
-import { ChevronDown, SlidersHorizontal, Grid, List, X, Info } from "lucide-react";
+import { ChevronDown, SlidersHorizontal, Grid, List, X, Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
-// Local static products list representing a fully populated premium catalogue
-const ALL_PRODUCTS = [
-  {
-    id: 1,
-    brand: "LUXE TIMEPIECES",
-    name: "The Horizon Chronograph",
-    price: 1250,
-    category: "Timepieces",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXufWm6FbZJ8NWggI_uqTag4zyANYjc7GViyC4Dix3RLWJl2EEJoAJxveBSIpSVpZAFWRaoRK47sm3UgppFeOI8u7kPJnzYKzFfHNMV1gotzHdSK_zCWWDLYEqJXpzeHFtAzZfzjRp6cisxyCQJo87IyM3ajdOiaDsDXFs08IuwM5xwEB2AaQlYsQwefDQG1ZlHuT4W-hkN_6eQA7_Al9Sz-omX5mL5pXvL6AgDOrx-aqF9xpJYEB4ydBeyki7cT4mzVd5S8aeHt44hb",
-    imageAlt: "A high-end luxury watch with a leather strap displayed on a dark, reflective surface.",
-    badge: "FEATURED",
-  },
-  {
-    id: 2,
-    brand: "LEATHER GOODS",
-    name: "Crescent Atelier Bag",
-    price: 890,
-    category: "Fashion",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCOM0EDAPsFT6d6b-3s34TmLFwuQD4xeltVY2xAajVxdwLUtdI1hqRig2hmkTqFf2VjRtD3tm6VHF71biuhlBDKtrUwCEInA55tAlTvPANnk0zuggrB-Hg4G42sAqGLs0agJSFESbgpl7sk4fwPg7hXa0BwjsNn_mWeisdFl81lx1B0mIs61_s-HA3luRjzHVDeOx5O9tBR32yBZ9xMiM5kzyQuoD9tqktxQjq-Co5bQ6v2UjarlJQotbIPjuq8-v7u-MeOEA0OM7qK",
-    imageAlt: "A sleek, designer leather handbag in a muted earth tone, photographed against a minimalist architectural background.",
-    badge: "LIMITED",
-  },
-  {
-    id: 3,
-    brand: "ACTIVE TECH",
-    name: "Pulse Smart Bracelet",
-    price: 420,
-    category: "Electronics",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCYuC-9bVEubhEvvo2Powvh29JmhA_ExfYvE76CstI-94URj9ud_froQLblqVk9DyN4DEju5GnK7yM5bX41eZ1fush0wvciFMquNGNSoyTwsJIKAIH3gI04lhy1vb1PeW-7MXsDH_ZH2sFnAdjk4ktRNFWX249IVEVAg1FND0EpWe0HrINYTtbji8eL2VQrlptANgC2maROBPm-k84lN3OM67G4yrvvdVZpjIlLDDQc7jYtwu7KKI_PeLG8WFWmtxIgX7UiFOpcBrDI",
-    imageAlt: "A premium minimalist smartwatch featuring a clean white band and a high-resolution glass display.",
-  },
-  {
-    id: 4,
-    brand: "COLLECTIONS",
-    name: "Silk Minimalist Blouse",
-    price: 350,
-    category: "Fashion",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuC56yEybdfcEBXD8wnBDrr0--z70us3KsV6MeQNgOCnkvpwMhS0QeAOrb9Jb2fc0wa38R2uz-yUTjY46VrFstXWb8zFZlstb01eM6140tUF7AIIPxv3Z-G-yp2WmhUYE7x1xZRC2GsBCGHVoByOstTfhTClb8tr-0ZkxkWWzLXNsSDfRgvfnmlTNhNJGtpf1kdo8-9tKRx0vqGcFUl2iFWk2L91inA5yhA73yUzGLRonXo9TOtVZwZQk3fcOZ9EE397KSDlwTIqZ9Qa",
-    imageAlt: "A curated arrangement of high-end fashion apparel, featuring a premium silk blouse and tailored trousers in soft cream colors.",
-  },
-  {
-    id: 5,
-    brand: "LIVING STUDIO",
-    name: "Travertine Sculptural Vessel",
-    price: 280,
-    category: "Home Decor",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBewA7jgwZvc-ygXhQFIB9niS9eVf_LoDU0tKxkp6V9peGVk9W5jWMNCO5pXZ1A5jFkZ-MD_rEfNcTq_5Tbcu2xku9KXKo-WU5DBAJ0377yRa3M_gG8mjk5yW_bhLw9f-zPaR9UEkhrcutAzpvCCWp4RgxhEPVOlMksSOKhhRlC3KzPqDOfYEbepQiG-qMz8mHSV9BSFhf5FJuFXjAemxf5qUVhWwsr0FteQomDUcaJrEzNGM4loay9SBzfontYizsE05Yvt8TrnuJc",
-    imageAlt: "A luxury sculptural stone vase.",
-    badge: "BESTSELLER",
-  },
-  {
-    id: 6,
-    brand: "SOUND LAB",
-    name: "Aero Over-Ear Headphones",
-    price: 650,
-    category: "Electronics",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuA6EFBnL-I3-jkKy3s1J7WqdZOteqgahWi2937kmzFzAGz4QVBRgqMskFdS00ft7LCd08r_6sLZI-rm0naLoYe_4iFYbVgSr9QhARtSgu1zNykqbkdox1UQ5Ja_SVVvvuq4Q1WcDzYmWroCCuWKTQMF_O1bT1P3yaBDjJPMS9fW_nrBT_cUzpCpTNyCrdB5aGbzHceRsSwE5V69zJPswy6vcrARyzOH8G2WsWL-F652QscEJEEcAtwbdrhRZ5qGH6363fCcb9MJaNRj",
-    imageAlt: "Over-ear luxury audio headphones.",
-  },
-  {
-    id: 7,
-    brand: "LEATHER GOODS",
-    name: "Atelier Travel Wallet",
-    price: 320,
-    category: "Fashion",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCOM0EDAPsFT6d6b-3s34TmLFwuQD4xeltVY2xAajVxdwLUtdI1hqRig2hmkTqFf2VjRtD3tm6VHF71biuhlBDKtrUwCEInA55tAlTvPANnk0zuggrB-Hg4G42sAqGLs0agJSFESbgpl7sk4fwPg7hXa0BwjsNn_mWeisdFl81lx1B0mIs61_s-HA3luRjzHVDeOx5O9tBR32yBZ9xMiM5kzyQuoD9tqktxQjq-Co5bQ6v2UjarlJQotbIPjuq8-v7u-MeOEA0OM7qK",
-    imageAlt: "A fine leather card wallet.",
-    badge: "NEW ARRIVAL",
-  },
-  {
-    id: 8,
-    brand: "LUXE TIMEPIECES",
-    name: "The Meridian Skeleton Automatic",
-    price: 2450,
-    category: "Timepieces",
-    imageSrc:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXufWm6FbZJ8NWggI_uqTag4zyANYjc7GViyC4Dix3RLWJl2EEJoAJxveBSIpSVpZAFWRaoRK47sm3UgppFeOI8u7kPJnzYKzFfHNMV1gotzHdSK_zCWWDLYEqJXpzeHFtAzZfzjRp6cisxyCQJo87IyM3ajdOiaDsDXFs08IuwM5xwEB2AaQlYsQwefDQG1ZlHuT4W-hkN_6eQA7_Al9Sz-omX5mL5pXvL6AgDOrx-aqF9xpJYEB4ydBeyki7cT4mzVd5S8aeHt44hb",
-    imageAlt: "A highly complex luxury automatic watch showing moving parts.",
-    badge: "LIMITED",
-  },
-];
+interface Category {
+  id: number;
+  name: string;
+}
 
-const CATEGORIES = ["All", "Fashion", "Electronics", "Home Decor", "Timepieces"];
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number | string;
+  stock: number;
+  image_url: string;
+  category_id: number;
+  categories: Category;
+}
+
+interface PaginationData {
+  total: number;
+  pages: number;
+  currentPage: number;
+  pageSize: number;
+}
+
 const SORT_OPTIONS = [
   { label: "Featured First", value: "featured" },
   { label: "Price: Low to High", value: "price_asc" },
@@ -104,32 +38,76 @@ const SORT_OPTIONS = [
   { label: "Alphabetical (A-Z)", value: "alpha_asc" },
 ];
 
+const MAX_PRICE_LIMIT = 50000;
+
 export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [pagination, setPagination] = useState<PaginationData | null>(null);
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefetching, setIsRefetching] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("featured");
-  const [priceRange, setPriceRange] = useState(2500);
+  const [priceRange, setPriceRange] = useState(MAX_PRICE_LIMIT);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  // Filter products
-  const filteredProducts = ALL_PRODUCTS.filter((product) => {
-    const matchesCategory =
-      selectedCategory === "All" || product.category === selectedCategory;
-    const matchesPrice = product.price <= priceRange;
-    return matchesCategory && matchesPrice;
-  });
+  // Initial Fetch of Categories
+  useEffect(() => {
+    fetch("/api/categories")
+      .then(res => res.json())
+      .then(data => setCategories(data))
+      .catch(err => console.error("Failed to fetch categories:", err));
+  }, []);
 
-  // Sort products
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortBy === "price_asc") return a.price - b.price;
-    if (sortBy === "price_desc") return b.price - a.price;
-    if (sortBy === "alpha_asc") return a.name.localeCompare(b.name);
-    // 'featured' defaults to order in original list (featured first has badges)
-    return a.id - b.id;
-  });
+  // Main Data Fetcher
+  const fetchData = useCallback(async (isInitial = false) => {
+    try {
+      if (isInitial) setIsLoading(true);
+      else setIsRefetching(true);
+
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        pageSize: "12",
+        sortBy: sortBy,
+        maxPrice: priceRange.toString(),
+      });
+
+      if (selectedCategory !== "All") {
+        params.append("categoryName", selectedCategory);
+      }
+
+      const res = await fetch(`/api/products?${params.toString()}`);
+      const data = await res.json();
+      
+      setProducts(data.products || []);
+      setPagination(data.pagination || null);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    } finally {
+      setIsLoading(false);
+      setIsRefetching(false);
+    }
+  }, [currentPage, selectedCategory, priceRange, sortBy]);
+
+  // Effect to trigger fetch on changes
+  useEffect(() => {
+    fetchData(products.length === 0);
+  }, [currentPage, selectedCategory, priceRange, sortBy]);
+
+  // Reset page when filters change
+  const handleFilterChange = (setter: any, value: any) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+
+  const categoryNames = ["All", ...categories.map(c => c.name)];
 
   const clearFilters = () => {
     setSelectedCategory("All");
-    setPriceRange(2500);
+    setPriceRange(MAX_PRICE_LIMIT);
+    setCurrentPage(1);
   };
 
   return (
@@ -142,7 +120,7 @@ export default function ProductsPage() {
             <span>/</span>
             <span className="text-luxe-primary font-bold">Products</span>
           </nav>
-          
+
           <h1 className="text-[40px] md:text-[52px] font-light leading-none tracking-tight text-luxe-on-surface">
             Curated Catalogue
           </h1>
@@ -155,13 +133,13 @@ export default function ProductsPage() {
       {/* Main Grid Section */}
       <div className="max-w-[1440px] mx-auto px-4 md:px-[64px] py-12">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
-          
+
           {/* Desktop Filters Sidebar - Column 1 */}
           <aside className="hidden lg:block space-y-8">
             <div>
               <div className="flex justify-between items-center mb-5">
                 <h3 className="text-xs font-bold tracking-[0.2em] text-luxe-on-surface uppercase">Filters</h3>
-                {(selectedCategory !== "All" || priceRange !== 2500) && (
+                {(selectedCategory !== "All" || priceRange !== MAX_PRICE_LIMIT) && (
                   <button
                     onClick={clearFilters}
                     className="text-[11px] font-bold text-luxe-primary hover:underline uppercase"
@@ -177,15 +155,14 @@ export default function ProductsPage() {
             <div className="space-y-4">
               <h4 className="text-[12px] font-bold tracking-[0.05em] text-luxe-on-surface-variant uppercase">Category</h4>
               <div className="flex flex-col gap-2.5">
-                {CATEGORIES.map((cat) => (
+                {categoryNames.map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`text-left text-sm font-light py-1 px-2.5 rounded-md transition-all ${
-                      selectedCategory === cat
-                        ? "bg-luxe-primary text-luxe-on-primary font-medium"
-                        : "text-luxe-on-surface-variant hover:bg-luxe-accent/5"
-                    }`}
+                    onClick={() => handleFilterChange(setSelectedCategory, cat)}
+                    className={`text-left text-sm font-light py-1 px-2.5 rounded-md transition-all ${selectedCategory === cat
+                      ? "bg-luxe-primary text-luxe-on-primary font-medium"
+                      : "text-luxe-on-surface-variant hover:bg-luxe-accent/5"
+                      }`}
                   >
                     {cat}
                   </button>
@@ -201,19 +178,19 @@ export default function ProductsPage() {
               </div>
               <input
                 type="range"
-                min="200"
-                max="2500"
-                step="50"
+                min="0"
+                max={MAX_PRICE_LIMIT}
+                step="100"
                 value={priceRange}
                 onChange={(e) => setPriceRange(Number(e.target.value))}
                 className="w-full accent-luxe-primary cursor-pointer"
               />
               <div className="flex justify-between text-[11px] font-semibold text-luxe-on-surface-variant opacity-60">
-                <span>$200</span>
-                <span>$2,500</span>
+                <span>$0</span>
+                <span>${MAX_PRICE_LIMIT.toLocaleString()}</span>
               </div>
             </div>
-            
+
             {/* Promo banner */}
             <div className="glass-panel p-6 rounded-2xl border border-luxe-outline-variant/20 relative overflow-hidden bg-luxe-primary-container/20">
               <h5 className="text-xs font-bold text-luxe-primary tracking-widest uppercase mb-2">Summer Drops</h5>
@@ -225,22 +202,22 @@ export default function ProductsPage() {
 
           {/* Products Grid & Sorting - Column 2-4 (3 columns) */}
           <div className="lg:col-span-3 space-y-8">
-            
+
             {/* Action Bar (Sorting, View, Filter Button on Mobile) */}
-            <div className="flex justify-between items-center bg-luxe-surface-container-lowest p-4 rounded-xl border border-luxe-outline-variant/10 shadow-sm flex-wrap gap-4">
+            <div className="flex justify-between items-center bg-luxe-surface-container-lowest p-4 rounded-xl border border-luxe-outline-variant/10 shadow-sm flex-wrap gap-4 px-6">
               <div className="flex items-center gap-3 text-xs font-semibold text-luxe-on-surface-variant">
                 <SlidersHorizontal className="size-4 lg:hidden cursor-pointer" onClick={() => setIsMobileFilterOpen(true)} />
-                <span>Showing <strong className="text-luxe-on-surface font-bold">{sortedProducts.length}</strong> Products</span>
+                <span>Showing <strong className={cn("text-luxe-on-surface font-bold transition-opacity", isRefetching ? "opacity-40" : "opacity-100")}>{pagination?.total || products.length}</strong> Products</span>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-semibold text-luxe-on-surface-variant hidden sm:inline">Sort By</span>
                   <div className="relative">
                     <select
                       value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className="bg-transparent text-xs font-bold text-luxe-on-surface border border-luxe-outline-variant/20 rounded-md py-1.5 px-3.5 pr-8 appearance-none focus:outline-none focus:ring-1 focus:ring-luxe-primary cursor-pointer"
+                      onChange={(e) => handleFilterChange(setSortBy, e.target.value)}
+                      className="bg-luxe-surface text-xs font-bold text-luxe-on-surface border border-luxe-outline-variant/20 rounded-md py-1.5 px-3.5 pr-8 appearance-none focus:outline-none focus:ring-1 focus:ring-luxe-primary cursor-pointer uppercase tracking-tight"
                     >
                       {SORT_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -255,26 +232,32 @@ export default function ProductsPage() {
             </div>
 
             {/* Active Filter Tags */}
-            {(selectedCategory !== "All" || priceRange !== 2500) && (
+            {(selectedCategory !== "All" || priceRange !== MAX_PRICE_LIMIT) && (
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs text-luxe-on-surface-variant font-medium">Active:</span>
                 {selectedCategory !== "All" && (
                   <Badge variant="secondary" className="gap-1 bg-luxe-primary/10 text-luxe-primary hover:bg-luxe-primary/15 border-none px-3.5 py-1.5 rounded-full">
                     {selectedCategory}
-                    <X className="size-3 cursor-pointer" onClick={() => setSelectedCategory("All")} />
+                    <X className="size-3 cursor-pointer" onClick={() => handleFilterChange(setSelectedCategory, "All")} />
                   </Badge>
                 )}
-                {priceRange !== 2500 && (
+                {priceRange !== MAX_PRICE_LIMIT && (
                   <Badge variant="secondary" className="gap-1 bg-luxe-primary/10 text-luxe-primary hover:bg-luxe-primary/15 border-none px-3.5 py-1.5 rounded-full">
-                    Under ${priceRange}
-                    <X className="size-3 cursor-pointer" onClick={() => setPriceRange(2500)} />
+                    Under ${priceRange.toLocaleString()}
+                    <X className="size-3 cursor-pointer" onClick={() => handleFilterChange(setPriceRange, MAX_PRICE_LIMIT)} />
                   </Badge>
                 )}
               </div>
             )}
 
-            {/* Empty State */}
-            {sortedProducts.length === 0 && (
+            {/* Products Grid State */}
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="aspect-[3/4] bg-luxe-outline-variant/10 animate-pulse rounded-2xl" />
+                ))}
+              </div>
+            ) : products.length === 0 ? (
               <div className="text-center py-20 bg-luxe-surface-container-lowest rounded-2xl border border-dashed border-luxe-outline-variant/30 space-y-4">
                 <Info className="size-10 text-luxe-primary mx-auto opacity-70" />
                 <h3 className="text-lg font-light text-luxe-on-surface">No Masterpieces Found</h3>
@@ -285,23 +268,72 @@ export default function ProductsPage() {
                   RESET FILTERS
                 </Button>
               </div>
-            )}
+            ) : (
+              <div className="space-y-12">
+                <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 transition-opacity duration-300", isRefetching ? "opacity-40" : "opacity-100")}>
+                  {products.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      brand={product.categories?.name || "LUXE"}
+                      name={product.name}
+                      price={`$${Number(product.price).toLocaleString()}`}
+                      imageSrc={product.image_url || "/placeholder.jpg"}
+                      imageAlt={product.name}
+                      href={`/products/${product.id}`}
+                    />
+                  ))}
+                </div>
 
-            {/* Products Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {sortedProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  brand={product.brand}
-                  name={product.name}
-                  price={`$${product.price.toLocaleString()}`}
-                  imageSrc={product.imageSrc}
-                  imageAlt={product.imageAlt}
-                  badge={product.badge}
-                  href={`/products/${product.id}`}
-                />
-              ))}
-            </div>
+                {/* Pagination Controls */}
+                {pagination && pagination.pages > 1 && (
+                  <div className="flex items-center justify-center gap-4 pt-8">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={currentPage === 1 || isRefetching}
+                      onClick={() => setCurrentPage(p => p - 1)}
+                      className="rounded-xl border-luxe-outline-variant/20 hover:bg-luxe-primary/10 hover:text-luxe-primary transition-colors"
+                    >
+                      <ChevronLeft className="size-4" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-2">
+                       {[...Array(pagination.pages)].map((_, i) => {
+                          const pageNum = i + 1;
+                          if (Math.abs(pageNum - currentPage) > 1 && pageNum !== 1 && pageNum !== pagination.pages) {
+                            if (pageNum === 2 || pageNum === pagination.pages - 1) return <span key={i} className="text-luxe-on-surface-variant/40">...</span>;
+                            return null;
+                          }
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => setCurrentPage(pageNum)}
+                              className={cn(
+                                "size-10 rounded-xl text-xs font-bold transition-all",
+                                currentPage === pageNum 
+                                  ? "bg-luxe-primary text-luxe-on-primary shadow-lg" 
+                                  : "text-luxe-on-surface-variant hover:bg-luxe-primary/10 hover:text-luxe-primary"
+                              )}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                       })}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={currentPage === pagination.pages || isRefetching}
+                      onClick={() => setCurrentPage(p => p + 1)}
+                      className="rounded-xl border-luxe-outline-variant/20 hover:bg-luxe-primary/10 hover:text-luxe-primary transition-colors"
+                    >
+                      <ChevronRight className="size-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
 
           </div>
         </div>
@@ -311,7 +343,7 @@ export default function ProductsPage() {
       {isMobileFilterOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-xs" onClick={() => setIsMobileFilterOpen(false)} />
-          
+
           <div className="relative w-[80vw] max-w-sm bg-luxe-surface dark:bg-luxe-inverse-surface h-full shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
             <div className="space-y-8">
               <div className="flex justify-between items-center">
@@ -324,18 +356,17 @@ export default function ProductsPage() {
               <div className="space-y-4">
                 <h4 className="text-[12px] font-bold tracking-[0.05em] text-luxe-on-surface-variant uppercase">Category</h4>
                 <div className="flex flex-col gap-2.5">
-                  {CATEGORIES.map((cat) => (
+                  {categoryNames.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => {
-                        setSelectedCategory(cat);
+                        handleFilterChange(setSelectedCategory, cat);
                         setIsMobileFilterOpen(false);
                       }}
-                      className={`text-left text-sm font-light py-2 px-3 rounded-md transition-all ${
-                        selectedCategory === cat
-                          ? "bg-luxe-primary text-luxe-on-primary font-medium"
-                          : "text-luxe-on-surface-variant hover:bg-luxe-accent/5"
-                      }`}
+                      className={`text-left text-sm font-light py-2 px-3 rounded-md transition-all ${selectedCategory === cat
+                        ? "bg-luxe-primary text-luxe-on-primary font-medium"
+                        : "text-luxe-on-surface-variant hover:bg-luxe-accent/5"
+                        }`}
                     >
                       {cat}
                     </button>
@@ -351,9 +382,9 @@ export default function ProductsPage() {
                 </div>
                 <input
                   type="range"
-                  min="200"
-                  max="2500"
-                  step="50"
+                  min="0"
+                  max={MAX_PRICE_LIMIT}
+                  step="100"
                   value={priceRange}
                   onChange={(e) => setPriceRange(Number(e.target.value))}
                   className="w-full accent-luxe-primary cursor-pointer"

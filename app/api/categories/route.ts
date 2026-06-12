@@ -4,13 +4,47 @@ import { serializeBigInt } from "@/lib/json";
 
 export async function GET(request: Request) {
   try {
-    const categories = await prisma.categories.findMany({
-      include: {
-        other_categories: true, // subcategories
-      },
-    });
+    const { searchParams } = new URL(request.url);
+    const countOnly = searchParams.get("countOnly") === "true";
 
-    return NextResponse.json(serializeBigInt(categories));
+    if (countOnly) {
+      const count = await prisma.categories.count();
+      return NextResponse.json({ count });
+    }
+
+    const [categories, total] = await Promise.all([
+      prisma.categories.findMany({
+        select: {
+          id: true,
+          name: true,
+          parent_id: true,
+          categories: { // This is the parent relation
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          _count: {
+            select: {
+              products: true,
+            },
+          },
+        },
+        orderBy: {
+          name: "asc",
+        },
+      }),
+      prisma.categories.count()
+    ]);
+
+    return NextResponse.json(serializeBigInt({
+      categories,
+      pagination: {
+        total,
+        pages: 1,
+        currentPage: 1
+      }
+    }));
   } catch (error) {
     console.error("Error fetching categories:", error);
     return NextResponse.json(
@@ -35,7 +69,7 @@ export async function POST(request: Request) {
     const category = await prisma.categories.create({
       data: {
         name,
-        parent_id: parent_id ? parseInt(parent_id) : null,
+        parent_id: parent_id ? parseInt(parent_id.toString()) : null,
       },
     });
 
