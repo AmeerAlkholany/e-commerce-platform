@@ -134,7 +134,7 @@ export default function ProductsPage() {
       const response = await fetch("/api/products");
       if (!response.ok) throw new Error("Failed to fetch");
       const data = await response.json();
-      setProducts(data);
+      setProducts(data.products || []);
     } catch (err: any) {
       setError(err.message);
       addToast(err.message, "error");
@@ -166,7 +166,7 @@ export default function ProductsPage() {
       if (searchQuery) params.append("search", searchQuery);
       const response = await fetch(`/api/products?${params.toString()}`);
       const data = await response.json();
-      setProducts(data);
+      setProducts(data.products || []);
     } catch (err: any) { addToast("Search failed", "error"); }
     finally { setLoading(false); }
   }
