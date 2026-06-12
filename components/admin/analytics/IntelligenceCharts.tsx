@@ -33,8 +33,16 @@ const CustomTooltip = ({ active, payload, label, prefix = "", suffix = "" }: any
   return null;
 };
 
+const ChartWrapper = ({ children }: { children: React.ReactNode }) => (
+  <div className="w-full h-full min-h-[250px]">
+    <ResponsiveContainer width="100%" height="100%" minHeight={250}>
+      {children as any}
+    </ResponsiveContainer>
+  </div>
+);
+
 export const RevenueAreaChart = ({ data }: { data: any[] }) => (
-  <ResponsiveContainer width="100%" height="100%">
+  <ChartWrapper>
     <AreaChart data={data} margin={{ left: -20, top: 10, right: 10 }}>
       <defs>
         <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
@@ -70,11 +78,11 @@ export const RevenueAreaChart = ({ data }: { data: any[] }) => (
         animationDuration={1500}
       />
     </AreaChart>
-  </ResponsiveContainer>
+  </ChartWrapper>
 );
 
 export const SectorPieChart = ({ data }: { data: any[] }) => (
-  <ResponsiveContainer width="100%" height="100%">
+  <ChartWrapper>
     <PieChart>
       <Pie
         data={data}
@@ -98,11 +106,11 @@ export const SectorPieChart = ({ data }: { data: any[] }) => (
         formatter={(value) => <span className="text-[10px] font-bold uppercase text-luxe-on-surface-variant tracking-[0.1em]">{value}</span>}
       />
     </PieChart>
-  </ResponsiveContainer>
+  </ChartWrapper>
 );
 
 export const ProductBarChart = ({ data }: { data: any[] }) => (
-  <ResponsiveContainer width="100%" height="100%">
+  <ChartWrapper>
     <BarChart data={data} layout="vertical" margin={{ left: 40, right: 20 }}>
       <CartesianGrid strokeDasharray="3 3" stroke="#222" horizontal={false} />
       <XAxis type="number" hide />
@@ -125,10 +133,11 @@ export const ProductBarChart = ({ data }: { data: any[] }) => (
         animationDuration={2000}
       />
     </BarChart>
-  </ResponsiveContainer>
+  </ChartWrapper>
 );
+
 export const UserAcquisitionChart = ({ data }: { data: any[] }) => (
-  <ResponsiveContainer width="100%" height="100%">
+  <ChartWrapper>
     <AreaChart data={data}>
       <defs>
         <linearGradient id="userAcquisitionGradient" x1="0" y1="0" x2="0" y2="1">
@@ -156,11 +165,11 @@ export const UserAcquisitionChart = ({ data }: { data: any[] }) => (
         fill="url(#userAcquisitionGradient)" 
       />
     </AreaChart>
-  </ResponsiveContainer>
+  </ChartWrapper>
 );
 
 export const AOVTrendChart = ({ data }: { data: any[] }) => (
-  <ResponsiveContainer width="100%" height="100%">
+  <ChartWrapper>
     <AreaChart data={data}>
       <defs>
         <linearGradient id="aovTrendGradient" x1="0" y1="0" x2="0" y2="1">
@@ -194,11 +203,11 @@ export const AOVTrendChart = ({ data }: { data: any[] }) => (
         fill="url(#aovTrendGradient)" 
       />
     </AreaChart>
-  </ResponsiveContainer>
+  </ChartWrapper>
 );
 
 export const StockStatusChart = ({ data }: { data: any[] }) => (
-  <ResponsiveContainer width="100%" height="100%">
+  <ChartWrapper>
     <PieChart>
       <Pie
         data={data}
@@ -224,10 +233,11 @@ export const StockStatusChart = ({ data }: { data: any[] }) => (
         formatter={(value) => <span className="text-[9px] font-bold uppercase text-luxe-on-surface-variant">{value}</span>}
       />
     </PieChart>
-  </ResponsiveContainer>
+  </ChartWrapper>
 );
+
 export const OrderVolumeChart = ({ data }: { data: any[] }) => (
-  <ResponsiveContainer width="100%" height="100%">
+  <ChartWrapper>
     <BarChart data={data}>
       <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
       <XAxis 
@@ -248,5 +258,5 @@ export const OrderVolumeChart = ({ data }: { data: any[] }) => (
         animationDuration={1500}
       />
     </BarChart>
-  </ResponsiveContainer>
+  </ChartWrapper>
 );
