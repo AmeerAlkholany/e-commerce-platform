@@ -46,25 +46,49 @@ export async function GET(request: Request) {
       ];
     }
 
-    const payments = await prisma.payments.findMany({
-      where: whereClause,
-      include: {
-        orders: {
-          include: {
-            users: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
+    // Pagination Params
+    const page = parseInt(searchParams.get("page") || "1");
+    const pageSize = parseInt(searchParams.get("pageSize") || "10");
+    const skip = (page - 1) * pageSize;
+
+    const [payments, total] = await Promise.all([
+      prisma.payments.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          status: true,
+          method: true,
+          transaction_id: true,
+          orders: {
+            select: {
+              id: true,
+              total: true,
+              created_at: true,
+              users: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                }
               }
             }
           }
-        }
-      },
-      orderBy: { id: 'desc' }
-    });
+        },
+        skip,
+        take: pageSize,
+        orderBy: { id: 'desc' }
+      }),
+      prisma.payments.count({ where: whereClause })
+    ]);
 
-    return NextResponse.json(serializeBigInt(payments));
+    return NextResponse.json(serializeBigInt({
+      payments,
+      pagination: {
+        total,
+        pages: Math.ceil(total / pageSize),
+        currentPage: page
+      }
+    }));
   } catch (error) {
     console.error("Error fetching payments:", error);
     return NextResponse.json(

@@ -12,26 +12,39 @@ export async function GET(request: Request) {
       return NextResponse.json({ count });
     }
 
-    const categories = await prisma.categories.findMany({
-      include: {
-        categories: {
-          select: {
-            id: true,
-            name: true,
+    const [categories, total] = await Promise.all([
+      prisma.categories.findMany({
+        select: {
+          id: true,
+          name: true,
+          parent_id: true,
+          categories: { // This is the parent relation
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          _count: {
+            select: {
+              products: true,
+            },
           },
         },
-        _count: {
-          select: {
-            products: true,
-          },
+        orderBy: {
+          name: "asc",
         },
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
+      }),
+      prisma.categories.count()
+    ]);
 
-    return NextResponse.json(serializeBigInt(categories));
+    return NextResponse.json(serializeBigInt({
+      categories,
+      pagination: {
+        total,
+        pages: 1,
+        currentPage: 1
+      }
+    }));
   } catch (error) {
     console.error("Error fetching categories:", error);
     return NextResponse.json(

@@ -148,7 +148,7 @@ export default function ProductsPage() {
       const response = await fetch("/api/categories");
       if (response.ok) {
         const data = await response.json();
-        setCategories(data);
+        setCategories(data.categories || []);
       }
     } catch { console.error("Failed to fetch categories"); }
   }
@@ -286,11 +286,18 @@ export default function ProductsPage() {
     <div className="space-y-8">
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Inventory <span className="text-luxe-primary">Catalog</span></h1>
-          <p className="text-luxe-on-surface-variant text-sm mt-1">Manage your luxury product collection.</p>
+          <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
+            Inventory <span className="text-luxe-primary">Catalog</span>
+          </h1>
+          <p className="text-luxe-on-surface-variant text-sm mt-1 font-medium tracking-wide">
+            Manage your luxury product collection.
+          </p>
         </div>
+
         <div className="flex gap-2">
           <Button onClick={() => setShowAddModal(true)} className="bg-luxe-primary text-luxe-on-primary">
             <Plus className="size-4 mr-2" /> Add New Product

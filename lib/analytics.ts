@@ -11,21 +11,20 @@ export class AnalyticsService {
    * Get total revenue and growth over a period
    */
   static async getRevenueStats(period?: AnalyticsPeriod) {
-    const orders = await prisma.orders.findMany({
+    const aggregations = await prisma.orders.aggregate({
       where: {
         status: { not: "cancelled" },
         ...(period ? { created_at: { gte: period.start, lte: period.end } } : {}),
       },
-      select: { total: true, created_at: true },
+      _sum: { total: true },
+      _count: { id: true },
+      _avg: { total: true }
     });
 
-    const totalRevenue = orders.reduce((sum, o) => sum + Number(o.total), 0);
-    const orderCount = orders.length;
-
     return {
-      totalRevenue,
-      orderCount,
-      avgOrderValue: orderCount > 0 ? totalRevenue / orderCount : 0,
+      totalRevenue: Number(aggregations._sum.total || 0),
+      orderCount: aggregations._count.id,
+      avgOrderValue: Number(aggregations._avg.total || 0),
     };
   }
 
@@ -106,21 +105,31 @@ export class AnalyticsService {
    * Get stock status categorization
    */
   static async getStockStatus() {
-    const products = await prisma.products.findMany({
-      select: { stock: true }
-    });
-
-    const status = {
-      inStock: products.filter(p => (p.stock ?? 0) > 10).length,
-      lowStock: products.filter(p => (p.stock ?? 0) > 0 && (p.stock ?? 0) <= 10).length,
-      outOfStock: products.filter(p => (p.stock ?? 0) === 0).length,
-    };
+    const [inStock, lowStock, outOfStock] = await Promise.all([
+      prisma.products.count({ where: { stock: { gt: 10 } } }),
+      prisma.products.count({ where: { stock: { gt: 0, lte: 10 } } }),
+      prisma.products.count({ where: { stock: 0 } }),
+    ]);
 
     return [
-      { name: "In Stock", value: status.inStock },
-      { name: "Low Stock", value: status.lowStock },
-      { name: "Out of Stock", value: status.outOfStock },
+      { name: "In Stock", value: inStock },
+      { name: "Low Stock", value: lowStock },
+      { name: "Out of Stock", value: outOfStock },
     ];
+  }
+
+  /**
+   * Consolidate sidebar counts into a single rapid fetch
+   */
+  static async getSidebarCounts() {
+    const [products, orders, categories, users, payments] = await Promise.all([
+      prisma.products.count(),
+      prisma.orders.count(),
+      prisma.categories.count(),
+      prisma.users.count(),
+      prisma.payments.count()
+    ]);
+    return { products, orders, categories, users, payments };
   }
 
   /**

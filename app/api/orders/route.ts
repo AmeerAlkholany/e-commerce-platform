@@ -35,34 +35,42 @@ export async function GET(request: Request) {
       ];
     }
 
-    const orders = await prisma.orders.findMany({
-      where: whereClause,
-      include: {
-        users: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        },
-        order_items: {
-          include: {
-            products: {
-              select: {
-                id: true,
-                name: true,
-                price: true,
-                image_url: true,
-              }
-            }
-          }
-        },
-        payments: true,
-      },
-      orderBy: { created_at: 'desc' }
-    });
+    // Pagination Params
+    const page = parseInt(searchParams.get("page") || "1");
+    const pageSize = parseInt(searchParams.get("pageSize") || "10");
+    const skip = (page - 1) * pageSize;
 
-    return NextResponse.json(serializeBigInt(orders));
+    const [orders, total] = await Promise.all([
+      prisma.orders.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          total: true,
+          status: true,
+          created_at: true,
+          users: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            }
+          },
+        },
+        skip,
+        take: pageSize,
+        orderBy: { created_at: 'desc' }
+      }),
+      prisma.orders.count({ where: whereClause })
+    ]);
+
+    return NextResponse.json(serializeBigInt({
+      orders,
+      pagination: {
+        total,
+        pages: Math.ceil(total / pageSize),
+        currentPage: page
+      }
+    }));
   } catch (error) {
     console.error("Error fetching all orders:", error);
     return NextResponse.json(

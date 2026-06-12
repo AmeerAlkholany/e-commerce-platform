@@ -38,39 +38,43 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [counts, setCounts] = useState({ products: 0, orders: 0, categories: 0, users: 0, payments: 0 });
 
   useEffect(() => {
-    // Fetch counts for badges
     const fetchCounts = async () => {
       try {
-        const [prodRes, orderRes, payRes, catRes, userDataRes] = await Promise.all([
-          fetch("/api/products?countOnly=true"),
-          fetch("/api/orders?countOnly=true"),
-          fetch("/api/payments?countOnly=true"),
-          fetch("/api/categories?countOnly=true"),
-          fetch("/api/users?countOnly=true")
-        ]);
+        // Instant load from localStorage if available
+        const cached = localStorage.getItem("luxe_admin_counts");
+        if (cached) {
+          const { data, expiry } = JSON.parse(cached);
+          if (Date.now() < expiry) {
+            setCounts(data);
+          }
+        }
 
-        const [prodData, orderData, payData, catData, userData] = await Promise.all([
-          prodRes.json(),
-          orderRes.json(),
-          payRes.json(),
-          catRes.json(),
-          userDataRes.json()
-        ]);
-
-        setCounts({
-          products: prodData.count || 0,
-          orders: orderData.count || 0,
-          payments: payData.count || 0,
-          categories: catData.count || 0,
-          users: userData.count || 0
-        });
+        const res = await fetch("/api/admin/stats");
+        if (!res.ok) throw new Error("Stats fail");
+        const { sidebar } = await res.json();
+        
+        if (sidebar) {
+          const freshData = {
+            products: sidebar.products || 0,
+            orders: sidebar.orders || 0,
+            payments: sidebar.payments || 0,
+            categories: sidebar.categories || 0,
+            users: sidebar.users || 0
+          };
+          setCounts(freshData);
+          // Cache for 5 minutes
+          localStorage.setItem("luxe_admin_counts", JSON.stringify({
+            data: freshData,
+            expiry: Date.now() + 5 * 60 * 1000
+          }));
+        }
       } catch (error) {
-        console.error("Failed to fetch sidebar counts:", error);
+        console.error("Sidebar Optimization Error:", error);
       }
     };
 
     fetchCounts();
-  }, [pathname]); // Refresh on navigation
+  }, [pathname]);
 
   const menuItems = [
     { name: "Overview", href: "/admin", icon: BarChart3 },

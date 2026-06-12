@@ -62,6 +62,8 @@ export default function OrdersPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const pageSize = 10;
   const [updatingId, setUpdatingId] = useState<number | null>(null);
 
@@ -74,9 +76,15 @@ export default function OrdersPage() {
       const params = new URLSearchParams();
       if (statusFilter !== "all") params.append("status", statusFilter);
       if (search) params.append("search", search);
-      const res = await fetch(`/api/orders?all=true&${params.toString()}`);
+      params.append("page", page.toString());
+      params.append("pageSize", pageSize.toString());
+
+      const res = await fetch(`/api/orders?${params.toString()}`);
       if (!res.ok) throw new Error("Failed");
-      setOrders(await res.json());
+      const data = await res.json();
+      setOrders(data.orders || []);
+      setTotalPages(data.pagination?.pages || 1);
+      setTotalCount(data.pagination?.total || 0);
     } catch (e: any) { addToast(e.message, "error"); }
     finally { setLoading(false); }
   }
@@ -93,17 +101,20 @@ export default function OrdersPage() {
     finally { setUpdatingId(null); }
   }
 
-  const paginated = orders.slice((page - 1) * pageSize, page * pageSize);
-  const totalPages = Math.ceil(orders.length / pageSize) || 1;
+  // const paginated = orders; // Now server-side
+  // const totalPages = Math.ceil(orders.length / pageSize) || 1;
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Order <span className="text-luxe-primary">Management</span></h1>
-          <p className="text-luxe-on-surface-variant text-sm mt-1">Track and manage client acquisitions.</p>
-        </div>
-      </div>
+      {/* Header */}        
+          <div>
+            <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
+              Order <span className="text-luxe-primary">Management</span>
+            </h1>
+            <p className="text-luxe-on-surface-variant text-sm mt-1 font-medium tracking-wide">
+              Track and manage client acquisitions.
+            </p>
+          </div>
 
       <Card className="glass-panel border-none">
         <CardHeader className="border-b border-luxe-outline-variant/20 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -132,7 +143,7 @@ export default function OrdersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginated.map(o => (
+                  {orders.map(o => (
                     <tr key={o.id} className="border-b border-luxe-outline-variant/10 hover:bg-luxe-surface-container/10 transition-all">
                       <td className="py-4 px-6 font-mono text-xs">
                       <Link href={`/admin/orders/${o.id}`} className="group">
@@ -169,7 +180,10 @@ export default function OrdersPage() {
               </table>
               {totalPages > 1 && (
                 <div className="flex items-center justify-between px-6 py-4 border-t border-luxe-outline-variant/20">
-                  <span className="text-xs text-luxe-on-surface-variant">Page {page} of {totalPages}</span>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs text-luxe-on-surface-variant">Page {page} of {totalPages}</span>
+                    <span className="text-[10px] bg-luxe-primary/10 text-luxe-primary px-2 py-0.5 rounded font-bold uppercase tracking-widest">{totalCount} total orders</span>
+                  </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="h-8 w-8 p-0 border-luxe-outline-variant"><ChevronLeft className="size-4" /></Button>
                     <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="h-8 w-8 p-0 border-luxe-outline-variant"><ChevronRight className="size-4" /></Button>
