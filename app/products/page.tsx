@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ProductCard } from "@/components/ProductCard";
-import { ChevronDown, SlidersHorizontal, Grid, List, X, Info } from "lucide-react";
+import { ChevronDown, SlidersHorizontal, Grid, List, X, Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 interface Category {
   id: number;
@@ -23,6 +24,13 @@ interface Product {
   categories: Category;
 }
 
+interface PaginationData {
+  total: number;
+  pages: number;
+  currentPage: number;
+  pageSize: number;
+}
+
 const SORT_OPTIONS = [
   { label: "Featured First", value: "featured" },
   { label: "Price: Low to High", value: "price_asc" },
@@ -30,62 +38,76 @@ const SORT_OPTIONS = [
   { label: "Alphabetical (A-Z)", value: "alpha_asc" },
 ];
 
+const MAX_PRICE_LIMIT = 50000;
+
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [pagination, setPagination] = useState<PaginationData | null>(null);
+  
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefetching, setIsRefetching] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("featured");
-  const [priceRange, setPriceRange] = useState(2500);
+  const [priceRange, setPriceRange] = useState(MAX_PRICE_LIMIT);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
+  // Initial Fetch of Categories
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [productsRes, categoriesRes] = await Promise.all([
-          fetch("/api/products"),
-          fetch("/api/categories")
-        ]);
-
-        const productsData = await productsRes.json();
-        const categoriesData = await categoriesRes.json();
-
-        setProducts(productsData);
-        setCategories(categoriesData);
-      } catch (error) {
-        console.error("Failed to fetch products or categories:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
+    fetch("/api/categories")
+      .then(res => res.json())
+      .then(data => setCategories(data))
+      .catch(err => console.error("Failed to fetch categories:", err));
   }, []);
+
+  // Main Data Fetcher
+  const fetchData = useCallback(async (isInitial = false) => {
+    try {
+      if (isInitial) setIsLoading(true);
+      else setIsRefetching(true);
+
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        pageSize: "12",
+        sortBy: sortBy,
+        maxPrice: priceRange.toString(),
+      });
+
+      if (selectedCategory !== "All") {
+        params.append("categoryName", selectedCategory);
+      }
+
+      const res = await fetch(`/api/products?${params.toString()}`);
+      const data = await res.json();
+      
+      setProducts(data.products || []);
+      setPagination(data.pagination || null);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    } finally {
+      setIsLoading(false);
+      setIsRefetching(false);
+    }
+  }, [currentPage, selectedCategory, priceRange, sortBy]);
+
+  // Effect to trigger fetch on changes
+  useEffect(() => {
+    fetchData(products.length === 0);
+  }, [currentPage, selectedCategory, priceRange, sortBy]);
+
+  // Reset page when filters change
+  const handleFilterChange = (setter: any, value: any) => {
+    setter(value);
+    setCurrentPage(1);
+  };
 
   const categoryNames = ["All", ...categories.map(c => c.name)];
 
-  // Filter products
-  const filteredProducts = products.filter((product) => {
-    const matchesCategory =
-      selectedCategory === "All" || product.categories?.name === selectedCategory;
-    const matchesPrice = Number(product.price) <= priceRange;
-    return matchesCategory && matchesPrice;
-  });
-
-  // Sort products
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const priceA = Number(a.price);
-    const priceB = Number(b.price);
-    if (sortBy === "price_asc") return priceA - priceB;
-    if (sortBy === "price_desc") return priceB - priceA;
-    if (sortBy === "alpha_asc") return a.name.localeCompare(b.name);
-    // 'featured' defaults to order in original list
-    return a.id - b.id;
-  });
-
   const clearFilters = () => {
     setSelectedCategory("All");
-    setPriceRange(2500);
+    setPriceRange(MAX_PRICE_LIMIT);
+    setCurrentPage(1);
   };
 
   return (
@@ -117,7 +139,7 @@ export default function ProductsPage() {
             <div>
               <div className="flex justify-between items-center mb-5">
                 <h3 className="text-xs font-bold tracking-[0.2em] text-luxe-on-surface uppercase">Filters</h3>
-                {(selectedCategory !== "All" || priceRange !== 2500) && (
+                {(selectedCategory !== "All" || priceRange !== MAX_PRICE_LIMIT) && (
                   <button
                     onClick={clearFilters}
                     className="text-[11px] font-bold text-luxe-primary hover:underline uppercase"
@@ -136,7 +158,7 @@ export default function ProductsPage() {
                 {categoryNames.map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => setSelectedCategory(cat)}
+                    onClick={() => handleFilterChange(setSelectedCategory, cat)}
                     className={`text-left text-sm font-light py-1 px-2.5 rounded-md transition-all ${selectedCategory === cat
                       ? "bg-luxe-primary text-luxe-on-primary font-medium"
                       : "text-luxe-on-surface-variant hover:bg-luxe-accent/5"
@@ -156,16 +178,16 @@ export default function ProductsPage() {
               </div>
               <input
                 type="range"
-                min="200"
-                max="2500"
-                step="50"
+                min="0"
+                max={MAX_PRICE_LIMIT}
+                step="100"
                 value={priceRange}
                 onChange={(e) => setPriceRange(Number(e.target.value))}
                 className="w-full accent-luxe-primary cursor-pointer"
               />
               <div className="flex justify-between text-[11px] font-semibold text-luxe-on-surface-variant opacity-60">
-                <span>$200</span>
-                <span>$2,500</span>
+                <span>$0</span>
+                <span>${MAX_PRICE_LIMIT.toLocaleString()}</span>
               </div>
             </div>
 
@@ -182,10 +204,10 @@ export default function ProductsPage() {
           <div className="lg:col-span-3 space-y-8">
 
             {/* Action Bar (Sorting, View, Filter Button on Mobile) */}
-            <div className="flex justify-between items-center bg-luxe-surface-container-lowest p-4 rounded-xl border border-luxe-outline-variant/10 shadow-sm flex-wrap gap-4">
+            <div className="flex justify-between items-center bg-luxe-surface-container-lowest p-4 rounded-xl border border-luxe-outline-variant/10 shadow-sm flex-wrap gap-4 px-6">
               <div className="flex items-center gap-3 text-xs font-semibold text-luxe-on-surface-variant">
                 <SlidersHorizontal className="size-4 lg:hidden cursor-pointer" onClick={() => setIsMobileFilterOpen(true)} />
-                <span>Showing <strong className="text-luxe-on-surface font-bold">{sortedProducts.length}</strong> Products</span>
+                <span>Showing <strong className={cn("text-luxe-on-surface font-bold transition-opacity", isRefetching ? "opacity-40" : "opacity-100")}>{pagination?.total || products.length}</strong> Products</span>
               </div>
 
               <div className="flex items-center gap-3">
@@ -194,9 +216,8 @@ export default function ProductsPage() {
                   <div className="relative">
                     <select
                       value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className="bg-luxe-surface text-xs font-bold text-luxe-on-surface border border-luxe-outline-variant/20 rounded-md py-1.5 px-3.5 pr-8 appearance-none focus:outline-none focus:ring-1 focus:ring-luxe-primary cursor-pointer"
-                    // className="w-full bg-luxe-surface border border-luxe-primary/30 rounded px-2 py-1 text-sm text-white outline-none"
+                      onChange={(e) => handleFilterChange(setSortBy, e.target.value)}
+                      className="bg-luxe-surface text-xs font-bold text-luxe-on-surface border border-luxe-outline-variant/20 rounded-md py-1.5 px-3.5 pr-8 appearance-none focus:outline-none focus:ring-1 focus:ring-luxe-primary cursor-pointer uppercase tracking-tight"
                     >
                       {SORT_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -211,26 +232,32 @@ export default function ProductsPage() {
             </div>
 
             {/* Active Filter Tags */}
-            {(selectedCategory !== "All" || priceRange !== 2500) && (
+            {(selectedCategory !== "All" || priceRange !== MAX_PRICE_LIMIT) && (
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs text-luxe-on-surface-variant font-medium">Active:</span>
                 {selectedCategory !== "All" && (
                   <Badge variant="secondary" className="gap-1 bg-luxe-primary/10 text-luxe-primary hover:bg-luxe-primary/15 border-none px-3.5 py-1.5 rounded-full">
                     {selectedCategory}
-                    <X className="size-3 cursor-pointer" onClick={() => setSelectedCategory("All")} />
+                    <X className="size-3 cursor-pointer" onClick={() => handleFilterChange(setSelectedCategory, "All")} />
                   </Badge>
                 )}
-                {priceRange !== 2500 && (
+                {priceRange !== MAX_PRICE_LIMIT && (
                   <Badge variant="secondary" className="gap-1 bg-luxe-primary/10 text-luxe-primary hover:bg-luxe-primary/15 border-none px-3.5 py-1.5 rounded-full">
-                    Under ${priceRange}
-                    <X className="size-3 cursor-pointer" onClick={() => setPriceRange(2500)} />
+                    Under ${priceRange.toLocaleString()}
+                    <X className="size-3 cursor-pointer" onClick={() => handleFilterChange(setPriceRange, MAX_PRICE_LIMIT)} />
                   </Badge>
                 )}
               </div>
             )}
 
-            {/* Empty State */}
-            {sortedProducts.length === 0 && (
+            {/* Products Grid State */}
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="aspect-[3/4] bg-luxe-outline-variant/10 animate-pulse rounded-2xl" />
+                ))}
+              </div>
+            ) : products.length === 0 ? (
               <div className="text-center py-20 bg-luxe-surface-container-lowest rounded-2xl border border-dashed border-luxe-outline-variant/30 space-y-4">
                 <Info className="size-10 text-luxe-primary mx-auto opacity-70" />
                 <h3 className="text-lg font-light text-luxe-on-surface">No Masterpieces Found</h3>
@@ -241,28 +268,70 @@ export default function ProductsPage() {
                   RESET FILTERS
                 </Button>
               </div>
-            )}
-
-            {/* Products Grid */}
-            {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="aspect-[3/4] bg-luxe-outline-variant/10 animate-pulse rounded-2xl" />
-                ))}
-              </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {sortedProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    brand={product.categories?.name || "LUXE"}
-                    name={product.name}
-                    price={`$${Number(product.price).toLocaleString()}`}
-                    imageSrc={product.image_url || "/placeholder.jpg"}
-                    imageAlt={product.name}
-                    href={`/products/${product.id}`}
-                  />
-                ))}
+              <div className="space-y-12">
+                <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 transition-opacity duration-300", isRefetching ? "opacity-40" : "opacity-100")}>
+                  {products.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      brand={product.categories?.name || "LUXE"}
+                      name={product.name}
+                      price={`$${Number(product.price).toLocaleString()}`}
+                      imageSrc={product.image_url || "/placeholder.jpg"}
+                      imageAlt={product.name}
+                      href={`/products/${product.id}`}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {pagination && pagination.pages > 1 && (
+                  <div className="flex items-center justify-center gap-4 pt-8">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={currentPage === 1 || isRefetching}
+                      onClick={() => setCurrentPage(p => p - 1)}
+                      className="rounded-xl border-luxe-outline-variant/20 hover:bg-luxe-primary/10 hover:text-luxe-primary transition-colors"
+                    >
+                      <ChevronLeft className="size-4" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-2">
+                       {[...Array(pagination.pages)].map((_, i) => {
+                          const pageNum = i + 1;
+                          if (Math.abs(pageNum - currentPage) > 1 && pageNum !== 1 && pageNum !== pagination.pages) {
+                            if (pageNum === 2 || pageNum === pagination.pages - 1) return <span key={i} className="text-luxe-on-surface-variant/40">...</span>;
+                            return null;
+                          }
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => setCurrentPage(pageNum)}
+                              className={cn(
+                                "size-10 rounded-xl text-xs font-bold transition-all",
+                                currentPage === pageNum 
+                                  ? "bg-luxe-primary text-luxe-on-primary shadow-lg" 
+                                  : "text-luxe-on-surface-variant hover:bg-luxe-primary/10 hover:text-luxe-primary"
+                              )}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                       })}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={currentPage === pagination.pages || isRefetching}
+                      onClick={() => setCurrentPage(p => p + 1)}
+                      className="rounded-xl border-luxe-outline-variant/20 hover:bg-luxe-primary/10 hover:text-luxe-primary transition-colors"
+                    >
+                      <ChevronRight className="size-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -291,7 +360,7 @@ export default function ProductsPage() {
                     <button
                       key={cat}
                       onClick={() => {
-                        setSelectedCategory(cat);
+                        handleFilterChange(setSelectedCategory, cat);
                         setIsMobileFilterOpen(false);
                       }}
                       className={`text-left text-sm font-light py-2 px-3 rounded-md transition-all ${selectedCategory === cat
@@ -313,9 +382,9 @@ export default function ProductsPage() {
                 </div>
                 <input
                   type="range"
-                  min="200"
-                  max="2500"
-                  step="50"
+                  min="0"
+                  max={MAX_PRICE_LIMIT}
+                  step="100"
                   value={priceRange}
                   onChange={(e) => setPriceRange(Number(e.target.value))}
                   className="w-full accent-luxe-primary cursor-pointer"

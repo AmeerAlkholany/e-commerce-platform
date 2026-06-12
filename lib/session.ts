@@ -138,8 +138,8 @@ export async function deleteSession() {
 export async function getUserFromRequest(request?: Request): Promise<{ id: number; email: string; role: string | null; name: string } | null> {
   if (process.env.NODE_ENV === "development" && process.env.DEV_ADMIN_BYPASS === "true") {
     return {
-      id: 15, // Assumes user with ID 15 is the main admin
-      email: "ahmedahmed1@gmail.com",
+      id: 4, // Assumes user with ID 15 is the main admin
+      email: "diana@example.com",
       role: "admin",
       name: "Development Admin",
     };
