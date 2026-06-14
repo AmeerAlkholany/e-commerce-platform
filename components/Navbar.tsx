@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLenis } from "lenis/react"
+import { useCart } from "@/components/providers/cart-context"
 
 export interface NavLink {
   label: string
@@ -20,7 +21,8 @@ export interface NavbarProps {
   cartCount?: number
 }
 
-export function Navbar({ links = [], cartCount = 0 }: NavbarProps) {
+export function Navbar({ links = [] }: NavbarProps) {
+  const { cartCount, openCart } = useCart()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isSearchActive, setIsSearchActive] = useState(false)
@@ -50,7 +52,7 @@ export function Navbar({ links = [], cartCount = 0 }: NavbarProps) {
   const handleLinkClick = (href: string, e: React.MouseEvent) => {
     if (href.startsWith("#")) {
       e.preventDefault()
-      const element = document.querySelector(href)
+      const element = document.querySelector(href) as HTMLElement;
       if (element && lenis) {
         lenis.scrollTo(element, { offset: -100 })
       }
@@ -105,7 +107,7 @@ export function Navbar({ links = [], cartCount = 0 }: NavbarProps) {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8 ml-6">
-              {links.map((link, i) => (
+              {links.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
@@ -173,6 +175,7 @@ export function Navbar({ links = [], cartCount = 0 }: NavbarProps) {
                 size="icon"
                 className="relative text-white hover:bg-white/5 hover:text-primary size-9 rounded-full transition-all duration-200 active:scale-90"
                 aria-label="Shopping bag"
+                onClick={openCart}
               >
                 <ShoppingBag className="size-5" />
                 {cartCount > 0 && (

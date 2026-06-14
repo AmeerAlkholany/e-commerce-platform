@@ -273,6 +273,7 @@ export default function ProductsPage() {
                 <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 transition-opacity duration-300", isRefetching ? "opacity-40" : "opacity-100")}>
                   {products.map((product) => (
                     <ProductCard
+                      id={product.id}
                       key={product.id}
                       brand={product.categories?.name || "LUXE"}
                       name={product.name}

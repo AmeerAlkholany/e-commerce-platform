@@ -8,8 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import { useRef, useState } from "react"
+import { useCart } from "@/components/providers/cart-context"
 
 export interface ProductCardProps {
+  id?: number
   brand: string
   name: string
   price: string
@@ -22,6 +24,7 @@ export interface ProductCardProps {
 }
 
 export function ProductCard({
+  id,
   brand,
   name,
   price,
@@ -32,6 +35,7 @@ export function ProductCard({
   onQuickAdd,
   className,
 }: ProductCardProps) {
+  const { addToCart } = useCart()
   const ref = useRef<HTMLDivElement>(null)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -159,7 +163,11 @@ export function ProductCard({
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  onQuickAdd?.()
+                  if (onQuickAdd) {
+                    onQuickAdd()
+                  } else if (id) {
+                    addToCart(id)
+                  }
                 }}
                 className={cn(
                   "bg-primary text-primary-foreground px-5 py-2.5 rounded-lg",

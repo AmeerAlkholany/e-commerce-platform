@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/json";
+import { getUserFromRequest } from "@/lib/session";
 
 // Helper to get cart for user (creates one if it doesn't exist)
 async function getOrCreateCart(userId: number) {
@@ -28,14 +29,20 @@ async function getOrCreateCart(userId: number) {
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userIdStr = searchParams.get("userId");
+    const user = await getUserFromRequest(request);
+    let userId: number;
 
-    if (!userIdStr) {
-      return NextResponse.json({ error: "userId is required" }, { status: 400 });
+    if (user) {
+      userId = user.id;
+    } else {
+      const { searchParams } = new URL(request.url);
+      const userIdStr = searchParams.get("userId");
+      if (!userIdStr) {
+        return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+      }
+      userId = parseInt(userIdStr, 10);
     }
 
-    const userId = parseInt(userIdStr, 10);
     if (isNaN(userId)) {
       return NextResponse.json({ error: "Invalid userId" }, { status: 400 });
     }
@@ -51,8 +58,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const sessionUser = await getUserFromRequest(request);
     const body = await request.json();
-    const { userId, productId, quantity } = body;
+    const { productId, quantity } = body;
+    let { userId } = body;
+
+    if (sessionUser) {
+      userId = sessionUser.id;
+    }
 
     if (!userId || !productId) {
       return NextResponse.json({ error: "userId and productId are required" }, { status: 400 });
@@ -63,6 +76,10 @@ export async function POST(request: Request) {
     
     if (isNaN(uid) || isNaN(pid)) {
       return NextResponse.json({ error: "Invalid userId or productId" }, { status: 400 });
+    }
+
+    if (sessionUser && uid !== sessionUser.id) {
+       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     const qty = quantity ? parseInt(quantity, 10) : 1;
