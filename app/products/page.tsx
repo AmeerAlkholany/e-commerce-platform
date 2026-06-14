@@ -56,8 +56,8 @@ export default function ProductsPage() {
   // Initial Fetch of Categories
   useEffect(() => {
     fetch("/api/categories")
-      .then(res => res.json())
-      .then(data => setCategories(data))
+      .then(res => res.json())      
+      .then(data => setCategories(data.categories || []))
       .catch(err => console.error("Failed to fetch categories:", err));
   }, []);
 
