@@ -168,7 +168,7 @@ export function Footer({ quickLinks = [], legalLinks = [] }: FooterProps) {
             <h4 className="font-bold text-white text-sm tracking-wider uppercase font-mono">Quick Links</h4>
             <ul className="space-y-2.5">
               {quickLinks.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link href={link.href} className="text-white/60 hover:text-primary font-mono text-xs transition-colors inline-block">
                     {link.label}
                   </Link>
@@ -182,7 +182,7 @@ export function Footer({ quickLinks = [], legalLinks = [] }: FooterProps) {
             <h4 className="font-bold text-white text-sm tracking-wider uppercase font-mono">Legal Specs</h4>
             <ul className="space-y-2.5">
               {legalLinks.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link href={link.href} className="text-white/60 hover:text-primary font-mono text-xs transition-colors inline-block">
                     {link.label}
                   </Link>
