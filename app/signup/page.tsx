@@ -2,10 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Lock, Mail, User, ArrowRight, ShieldCheck, Check } from "lucide-react";
+import { useAuth } from "@/components/providers/auth-context";
+import { signupSchema } from "@/lib/validations/users";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -15,6 +18,14 @@ export default function SignupPage() {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { signup, isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.push("/");
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   // Password strength calculation
   const [strength, setStrength] = useState<{ score: number; text: string; color: string }>({ score: 0, text: "Too Weak", color: "bg-luxe-outline-variant/30 text-luxe-outline" });
@@ -40,26 +51,31 @@ export default function SignupPage() {
     }
   }, [password]);
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) {
-      setError("Please complete all fields.");
-      return;
-    }
+    setError("");
+
     if (!agreeTerms) {
       setError("Please accept the Membership Terms of Service.");
       return;
     }
-    if (strength.score < 2) {
-      setError("Please select a stronger password.");
+
+    // 1. Client-side validation with Zod
+    const validation = signupSchema.safeParse({ name, email, password });
+    if (!validation.success) {
+      setError(validation.error.issues[0].message);
       return;
     }
-    setError("");
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await signup({ name, email, password });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Registration failed. Please try again.";
+      setError(message);
+    } finally {
       setLoading(false);
-      alert(`Invitation request submitted for: ${email}`);
-    }, 1200);
+    }
   };
 
   const getScoreWidth = () => {

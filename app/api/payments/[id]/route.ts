@@ -4,10 +4,11 @@ import { serializeBigInt } from "@/lib/json";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id: idParam } = await params;
   try {
-    const id = parseInt(params.id);
+    const id = parseInt(idParam);
     const body = await request.json();
     const { status, method, transaction_id } = body;
 
@@ -43,7 +44,7 @@ export async function PATCH(
 
     return NextResponse.json(serializeBigInt(updatedPayment));
   } catch (error) {
-    console.error(`Error updating payment ${params.id}:`, error);
+    console.error(`Error updating payment ${idParam}:`, error);
     return NextResponse.json(
       { error: "Failed to update payment" },
       { status: 500 }

@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MagicCard } from "@/components/magicui/magic-card";
 import { Meteors } from "@/components/magicui/meteors";
 import { Eye, EyeOff, Lock, Mail, ArrowRight, ShieldCheck } from "lucide-react";
+import { useAuth } from "@/components/providers/auth-context";
+import { loginSchema } from "@/lib/validations/users";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -14,19 +17,35 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { login, isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.push("/");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError("Please enter both email and password.");
+    setError("");
+
+    // 1. Client-side validation with Zod
+    const validation = loginSchema.safeParse({ email, password });
+    if (!validation.success) {
+      setError(validation.error.issues[0].message);
       return;
     }
-    setError("");
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await login({ email, password });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Invalid credentials. Please try again.";
+      setError(message);
+    } finally {
       setLoading(false);
-      alert(`Successfully logged in as: ${email}`);
-    }, 1200);
+    }
   };
 
   const fillCredentials = (type: "customer" | "admin") => {

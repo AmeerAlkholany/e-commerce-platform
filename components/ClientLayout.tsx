@@ -6,6 +6,8 @@ import { Footer } from "@/components/Footer";
 import { CartProvider } from "@/components/providers/cart-context";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 
+import { AuthProvider } from "@/components/providers/auth-context";
+
 interface ClientLayoutProps {
   children: React.ReactNode;
   navLinks: Array<{ label: string; href: string; isActive?: boolean }>;
@@ -23,11 +25,13 @@ export function ClientLayout({
   const isAdmin = pathname.startsWith("/admin");
 
   return (
-    <CartProvider>
-      {!isAdmin && <Navbar links={navLinks} />}
-      <main className="flex-1">{children}</main>
-      {!isAdmin && <Footer quickLinks={quickLinks} legalLinks={legalLinks} />}
-      <CartDrawer />
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        {!isAdmin && <Navbar links={navLinks} />}
+        <main className="flex-1">{children}</main>
+        {!isAdmin && <Footer quickLinks={quickLinks} legalLinks={legalLinks} />}
+        <CartDrawer />
+      </CartProvider>
+    </AuthProvider>
   );
 }

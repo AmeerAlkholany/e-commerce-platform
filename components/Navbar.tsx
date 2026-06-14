@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLenis } from "lenis/react"
 import { useCart } from "@/components/providers/cart-context"
+import { useAuth } from "@/components/providers/auth-context"
 
 export interface NavLink {
   label: string
@@ -23,6 +24,7 @@ export interface NavbarProps {
 
 export function Navbar({ links = [] }: NavbarProps) {
   const { cartCount, openCart } = useCart()
+  const { user, isAuthenticated, logout } = useAuth()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isSearchActive, setIsSearchActive] = useState(false)
@@ -165,10 +167,32 @@ export function Navbar({ links = [] }: NavbarProps) {
                 aria-label="Account"
                 asChild
               >
-                <Link href="/login">
+                <Link href={isAuthenticated ? "/profile" : "/login"}>
                   <User className="size-5" />
                 </Link>
               </Button>
+
+              {/* Authenticated User Quick Menu */}
+              {isAuthenticated && (
+                <div className="hidden md:flex items-center gap-2 border-l border-white/10 ml-2 pl-4">
+                  <div className="flex flex-col items-end mr-1">
+                    <span className="text-[10px] font-bold text-primary tracking-tighter uppercase leading-none">
+                      {user?.role === "admin" ? "ADMINISTRATOR" : "VERIFIED CLIENT"}
+                    </span>
+                    <span className="text-[12px] font-medium text-white/90 truncate max-w-[100px]">
+                      {user?.name.split(" ")[0]}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => logout()}
+                    className="text-[10px] font-bold tracking-widest text-white/40 hover:text-primary hover:bg-transparent px-0 uppercase transition-colors"
+                  >
+                    Logout
+                  </Button>
+                </div>
+              )}
 
               <Button
                 variant="ghost"
