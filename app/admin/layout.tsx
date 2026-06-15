@@ -52,7 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const res = await fetch("/api/admin/stats");
         if (!res.ok) throw new Error("Stats fail");
         const { sidebar } = await res.json();
-        
+
         if (sidebar) {
           const freshData = {
             products: sidebar.products || 0,
@@ -77,7 +77,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [pathname]);
 
   const menuItems = [
-    { name: "Overview", href: "/admin", icon: BarChart3 },
+    { name: "Overview", href: "/admin/dashboard", icon: BarChart3 },
     { name: "Inventory", href: "/admin/products", icon: Package, badge: counts.products },
     { name: "Categories", href: "/admin/categories", icon: Layers, badge: counts.categories },
     { name: "Orders", href: "/admin/orders", icon: ClipboardList, badge: counts.orders },
@@ -151,20 +151,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <SidebarInset className="flex-1 flex flex-col min-h-screen bg-luxe-surface">
           <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-luxe-outline-variant/20 bg-luxe-surface px-6 md:px-8">
-            <div className="flex items-center gap-3">
+            <div classNamce="flex items-center gap-3">
               <SidebarTrigger className="text-luxe-on-surface hover:bg-luxe-surface-container size-9" />
               <div className="h-4 w-px bg-luxe-outline-variant/30" />
               <span className="text-[12px] font-semibold text-luxe-on-surface-variant/80 tracking-[0.15em] hover:text-white transition-colors cursor-default select-none">
                 ADMIN CONSOLE
               </span>
-              
+
               {pathname.split("/").filter(Boolean).map((segment, index, array) => {
                 const isLast = index === array.length - 1;
                 const path = `/${array.slice(0, index + 1).join("/")}`;
-                
+
                 // Title Mapping for Pretty Breadcrumbs
                 const labels: Record<string, string> = {
-                  admin: "Console",
+                  admin: "Dashboard",
                   products: "Inventory",
                   categories: "Categories",
                   orders: "Orders",
@@ -184,11 +184,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         "text-[12px] font-black uppercase tracking-widest",
                         isId ? "text-luxe-primary font-mono" : "text-white"
                       )}>
-                        {isId ? `#${segment.padStart(4, '0')}` : label.replace("-", " ") }
+                        {isId ? `#${segment.padStart(4, '0')}` : label.replace("-", " ")}
                       </span>
                     ) : (
-                      <Link 
-                        href={path} 
+                      <Link
+                        href={path}
                         className="text-[12px] font-bold text-luxe-on-surface-variant/60 hover:text-luxe-primary uppercase tracking-widest transition-all hover:translate-x-0.5"
                       >
                         {label}
