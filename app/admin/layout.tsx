@@ -78,12 +78,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const menuItems = [
     { name: "Overview", href: "/admin/dashboard", icon: BarChart3 },
-    { name: "Inventory", href: "/admin/products", icon: Package, badge: counts.products },
-    { name: "Categories", href: "/admin/categories", icon: Layers, badge: counts.categories },
-    { name: "Orders", href: "/admin/orders", icon: ClipboardList, badge: counts.orders },
-    { name: "Payments", href: "/admin/payments", icon: CreditCard, badge: counts.payments },
-    { name: "Users", href: "/admin/users", icon: Users, badge: counts.users },
-    { name: "Reports", href: "/admin/reports", icon: FileText },
+    { name: "Inventory", href: "/admin/dashboard/products", icon: Package, badge: counts.products },
+    { name: "Categories", href: "/admin/dashboard/categories", icon: Layers, badge: counts.categories },
+    { name: "Orders", href: "/admin/dashboard/orders", icon: ClipboardList, badge: counts.orders },
+    { name: "Payments", href: "/admin/dashboard/payments", icon: CreditCard, badge: counts.payments },
+    { name: "Users", href: "/admin/dashboard/users", icon: Users, badge: counts.users },
+    { name: "Reports", href: "/admin/dashboard/reports", icon: FileText },
   ];
 
   return (
@@ -158,22 +158,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 ADMIN CONSOLE
               </span>
 
-              {pathname.split("/").filter(Boolean).map((segment, index, array) => {
+              {pathname.split("/").filter(s => s && s !== "admin").map((segment, index, array) => {
                 const isLast = index === array.length - 1;
-                const path = `/${array.slice(0, index + 1).join("/")}`;
+                const path = `/admin/${array.slice(0, index + 1).join("/")}`;
 
                 // Title Mapping for Pretty Breadcrumbs
                 const labels: Record<string, string> = {
-                  admin: "Dashboard",
+                  dashboard: "Dashboard",
                   products: "Inventory",
                   categories: "Categories",
                   orders: "Orders",
-                  payments: "Transactions",
-                  users: "Registry",
-                  reports: "Analytics",
+                  payments: "Payments",
+                  users: "Users",
+                  reports: "Reports",
                 };
 
-                const label = labels[segment] || segment.toUpperCase();
+                const label = labels[segment] || segment;
                 const isId = !isNaN(Number(segment));
 
                 return (
