@@ -146,7 +146,7 @@ export default function OrdersPage() {
                   {orders.map(o => (
                     <tr key={o.id} className="border-b border-luxe-outline-variant/10 hover:bg-luxe-surface-container/10 transition-all">
                       <td className="py-4 px-6 font-mono text-xs">
-                      <Link href={`/admin/orders/${o.id}`} className="group">
+                      <Link href={`/admin/dashboard/orders/${o.id}`} className="group">
                         <div className="flex items-center gap-1.5 font-mono text-[11px] text-luxe-primary font-bold">
                           ORD-{o.id}
                           <ExternalLink className="size-2.5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -165,7 +165,7 @@ export default function OrdersPage() {
                       <td className="py-4 px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Button asChild variant="ghost" size="sm" className="text-luxe-primary hover:bg-luxe-primary/10 h-8 px-3">
-                            <Link href={`/admin/orders/${o.id}`}>
+                            <Link href={`/admin/dashboard/orders/${o.id}`}>
                               <Eye className="size-4" />
                             </Link>
                           </Button>

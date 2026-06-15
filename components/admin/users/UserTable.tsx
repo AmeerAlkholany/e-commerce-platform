@@ -131,7 +131,7 @@ export function UserTable({ users, isLoading }: { users: User[]; isLoading: bool
             variant="ghost" 
             size="sm" 
             className="size-8 p-0 text-luxe-on-surface-variant hover:text-white"
-            onClick={() => router.push(`/admin/users/${info.row.original.id}`)}
+            onClick={() => router.push(`/admin/dashboard/users/${info.row.original.id}`)}
           >
             <Pencil className="size-3.5" />
           </Button>
