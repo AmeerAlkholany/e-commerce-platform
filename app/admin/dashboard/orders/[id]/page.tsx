@@ -207,7 +207,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 <p className="text-[9px] font-black text-luxe-on-surface-variant uppercase tracking-[0.2em] opacity-40">Communication Line</p>
                 <p className="text-xs font-bold text-white tracking-wide">{order.users?.email}</p>
               </div>
-              <div className="flex items-center gap-2 group cursor-pointer" onClick={() => router.push(`/admin/users/${order.users?.id}`)}>
+              <div className="flex items-center gap-2 group cursor-pointer" onClick={() => router.push(`/admin/dashboard/users/${order.users?.id}`)}>
                 <span className="text-[10px] font-black text-luxe-primary uppercase tracking-widest">Go to Profile</span>
                 <ChevronLeft className="size-3 text-luxe-primary group-hover:translate-x-1 transition-transform rotate-180" />
               </div>
