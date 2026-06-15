@@ -107,12 +107,12 @@ export default function LoginPage() {
           <MagicCard
             glowColor="rgba(175, 255, 0, 0.06)"
             borderColor="rgba(175, 255, 0, 0.12)"
-            className="p-8 rounded-2xl relative overflow-hidden bg-luxe-surface-container/80 backdrop-blur-xl shadow-2xl border border-white/5 flex flex-col justify-between"
+            className="p-0 rounded-2xl relative overflow-hidden bg-luxe-surface-container/80 backdrop-blur-xl shadow-2xl border border-white/5 flex flex-col justify-between"
           >
             {/* Top decorative stripe */}
-            <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-luxe-primary via-luxe-tertiary to-luxe-primary" />
+            <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-luxe-tertiary via-luxe-primary to-luxe-tertiary" />
 
-            <div className="space-y-6">
+            <div className="p-8 space-y-6">
               <div className="space-y-2">
                 <h2 className="text-[28px] font-semibold text-luxe-on-surface tracking-tight">
                   Sign In
@@ -227,13 +227,13 @@ export default function LoginPage() {
                   </button>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-6 pt-4 border-t border-luxe-outline-variant/20 flex justify-center text-[13px] text-luxe-on-surface-variant">
-              <span>New to Luxe? </span>
-              <Link href="/signup" className="text-luxe-primary font-bold hover:underline ml-1">
-                Request Invitation
-              </Link>
+              <div className="mt-6 pt-4 border-t border-luxe-outline-variant/20 flex justify-center text-[13px] text-luxe-on-surface-variant">
+                <span>New to Luxe? </span>
+                <Link href="/signup" className="text-luxe-primary font-bold hover:underline ml-1">
+                  Request Invitation
+                </Link>
+              </div>
             </div>
           </MagicCard>
         </div>
