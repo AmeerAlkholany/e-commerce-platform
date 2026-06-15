@@ -106,9 +106,9 @@ export default function SignupPage() {
           <span className="text-[12px] font-bold tracking-[0.25em] text-luxe-tertiary-fixed-dim uppercase block">
             A Lifetime of Privileges
           </span>
-          <h1 className="text-[48px] md:text-[56px] leading-[1.1] font-light tracking-tight text-white">
+          <h1 className="text-[48px] md:text-[56px] leading-[1.1] font-light tracking-tight text-luxe-inverse-on-surface">
             Access <br />
-            <span className="italic font-normal text-luxe-tertiary-fixed-dim">unrivaled</span> <br />
+            <span className="italic font-normal text-luxe-tertiary">unrivaled</span> <br />
             craftsmanship.
           </h1>
           <p className="text-[16px] text-luxe-inverse-on-surface/70 leading-[1.6]">
@@ -117,7 +117,7 @@ export default function SignupPage() {
         </div>
 
         {/* Footer Note */}
-        <div className="z-10 flex items-center justify-between border-t border-white/10 pt-6 text-[12px] text-luxe-inverse-on-surface/50 tracking-wider">
+        <div className="z-10 flex items-center justify-between border-t border-luxe-inverse-on-surface/10 pt-6 text-[12px] text-luxe-inverse-on-surface/50 tracking-wider">
           <span>MEMBERSHIP INVITATION</span>
           <span>EST. 2018</span>
         </div>

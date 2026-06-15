@@ -80,9 +80,9 @@ export default function LoginPage() {
           <span className="text-[12px] font-bold tracking-[0.25em] text-luxe-primary-fixed-dim uppercase block">
             Exclusivity Redefined
           </span>
-          <h1 className="text-[48px] md:text-[56px] leading-[1.1] font-light tracking-tight text-white">
+          <h1 className="text-[48px] md:text-[56px] leading-[1.1] font-light tracking-tight text-luxe-inverse-on-surface">
             Curating <br />
-            <span className="italic font-normal text-luxe-primary-fixed-dim">exceptional</span> <br />
+            <span className="italic font-normal text-luxe-primary">exceptional</span> <br />
             experiences.
           </h1>
           <p className="text-[16px] text-luxe-inverse-on-surface/70 leading-[1.6]">
@@ -91,7 +91,7 @@ export default function LoginPage() {
         </div>
 
         {/* Editorial Footer Note */}
-        <div className="z-10 flex items-center justify-between border-t border-white/10 pt-6 text-[12px] text-luxe-inverse-on-surface/50 tracking-wider">
+        <div className="z-10 flex items-center justify-between border-t border-luxe-inverse-on-surface/10 pt-6 text-[12px] text-luxe-inverse-on-surface/50 tracking-wider">
           <span>MEMBERSHIP PRIVILEGES</span>
           <span>EST. 2018</span>
         </div>
