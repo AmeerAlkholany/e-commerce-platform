@@ -151,7 +151,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <SidebarInset className="flex-1 flex flex-col min-h-screen bg-luxe-surface">
           <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-luxe-outline-variant/20 bg-luxe-surface px-6 md:px-8">
-            <div classNamce="flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <SidebarTrigger className="text-luxe-on-surface hover:bg-luxe-surface-container size-9" />
               <div className="h-4 w-px bg-luxe-outline-variant/30" />
               <span className="text-[12px] font-semibold text-luxe-on-surface-variant/80 tracking-[0.15em] hover:text-white transition-colors cursor-default select-none">
