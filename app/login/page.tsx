@@ -105,9 +105,9 @@ export default function LoginPage() {
         <div className="w-full max-w-[460px] z-10">
           {/* Replace Card layout with spotlight MagicCard */}
           <MagicCard
-            glowColor="rgba(79, 70, 229, 0.05)"
-            borderColor="rgba(79, 70, 229, 0.15)"
-            className="p-8 rounded-2xl relative overflow-hidden bg-white/70 dark:bg-luxe-inverse-surface/70 shadow-xl border border-luxe-outline-variant/15 flex flex-col justify-between"
+            glowColor="rgba(175, 255, 0, 0.06)"
+            borderColor="rgba(175, 255, 0, 0.12)"
+            className="p-8 rounded-2xl relative overflow-hidden bg-luxe-surface-container/80 backdrop-blur-xl shadow-2xl border border-white/5 flex flex-col justify-between"
           >
             {/* Top decorative stripe */}
             <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-luxe-primary via-luxe-tertiary to-luxe-primary" />
@@ -136,7 +136,7 @@ export default function LoginPage() {
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-outline size-4" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 size-4" />
                     <Input
                       id="login-email"
                       type="email"
@@ -163,7 +163,7 @@ export default function LoginPage() {
                     </Link>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-outline size-4" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 size-4" />
                     <Input
                       id="login-password"
                       type={showPassword ? "text" : "password"}
@@ -176,7 +176,7 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-luxe-outline hover:text-luxe-on-surface transition-colors cursor-pointer"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 hover:text-luxe-primary transition-colors cursor-pointer"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}

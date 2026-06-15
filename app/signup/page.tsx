@@ -28,11 +28,11 @@ export default function SignupPage() {
   }, [isAuthenticated, isLoading, router]);
 
   // Password strength calculation
-  const [strength, setStrength] = useState<{ score: number; text: string; color: string }>({ score: 0, text: "Too Weak", color: "bg-luxe-outline-variant/30 text-luxe-outline" });
+  const [strength, setStrength] = useState<{ score: number; text: string; color: string }>({ score: 0, text: "Too Weak", color: "bg-luxe-outline-variant/30 text-luxe-on-surface-variant" });
 
   useEffect(() => {
     if (!password) {
-      setStrength({ score: 0, text: "Not Entered", color: "bg-luxe-outline-variant/30 text-luxe-outline" });
+      setStrength({ score: 0, text: "Not Entered", color: "bg-luxe-outline-variant/30 text-luxe-on-surface-variant" });
       return;
     }
 
@@ -155,7 +155,7 @@ export default function SignupPage() {
                     Full Name
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-outline size-4" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 size-4" />
                     <Input
                       id="signup-name"
                       type="text"
@@ -174,7 +174,7 @@ export default function SignupPage() {
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-outline size-4" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 size-4" />
                     <Input
                       id="signup-email"
                       type="email"
@@ -193,7 +193,7 @@ export default function SignupPage() {
                     Password
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-outline size-4" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 size-4" />
                     <Input
                       id="signup-password"
                       type={showPassword ? "text" : "password"}
@@ -206,7 +206,7 @@ export default function SignupPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-luxe-outline hover:text-luxe-on-surface transition-colors cursor-pointer"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 hover:text-luxe-primary transition-colors cursor-pointer"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
