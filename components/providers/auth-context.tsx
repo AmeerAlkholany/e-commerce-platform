@@ -14,6 +14,7 @@ interface AuthContextType {
   signup: (data: SignupInputs) => Promise<void>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
+  refetchUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -33,6 +34,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           name: data.name,
           email: data.email,
           role: data.role,
+          phone: data.phone,
+          avatar_url: data.avatar_url,
+          created_at: data.created_at,
         });
       } else {
         setUser(null);
@@ -120,6 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signup,
     logout,
     refreshSession,
+    refetchUser: refreshSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

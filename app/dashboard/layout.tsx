@@ -31,9 +31,17 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { useAuth } from "@/components/providers/auth-context";
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const pathname = usePathname();
   const [counts, setCounts] = useState({ orders: 0 });
+
+  const getInitials = (name?: string) => {
+    if (!name) return "??";
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+  };
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -54,8 +62,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const menuItems = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "My Orders", href: "/dashboard/orders", icon: ShoppingBag, badge: counts.orders },
-    { name: "Profile Settings", href: "/profile", icon: User },
-    { name: "Contact Support", href: "/support", icon: LifeBuoy },
+    { name: "Profile Settings", href: "/dashboard/profile", icon: User },
+    { name: "Contact Support", href: "/dashboard/support", icon: LifeBuoy },
   ];
 
   return (
@@ -133,9 +141,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                <Button variant="ghost" size="icon" className="text-luxe-on-surface-variant hover:text-white size-9 rounded-full">
                   <Bell className="size-5" />
                </Button>
-               <div className="h-8 w-8 rounded-full bg-luxe-primary/20 border border-luxe-primary/30 flex items-center justify-center text-[10px] font-bold text-luxe-primary uppercase cursor-pointer hover:bg-luxe-primary/30 transition-colors">
-                  UV
-               </div>
+               
+               <Link href="/dashboard/profile">
+                 <div className="h-9 w-9 rounded-full bg-luxe-primary/20 border border-luxe-primary/30 flex items-center justify-center text-[10px] font-bold text-luxe-primary uppercase cursor-pointer hover:bg-luxe-primary/30 transition-all overflow-hidden relative group">
+                    {user?.avatar_url ? (
+                      <img src={user.avatar_url} alt={user.name} className="size-full object-cover group-hover:scale-110 transition-transform" />
+                    ) : (
+                      getInitials(user?.name)
+                    )}
+                 </div>
+               </Link>
             </div>
           </header>
 

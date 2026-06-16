@@ -24,8 +24,9 @@ export async function GET(request: Request) {
         name: true,
         email: true,
         role: true,
+        phone: true,
+        avatar_url: true,
         created_at: true,
-        addresses: true,
       },
     });
 

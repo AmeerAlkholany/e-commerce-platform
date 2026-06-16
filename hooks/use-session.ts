@@ -7,6 +7,9 @@ export interface SessionUser {
   name: string;
   email: string;
   role: string | null;
+  phone: string | null;
+  avatar_url: string | null;
+  created_at: string;
 }
 
 export function useSession() {
@@ -27,6 +30,9 @@ export function useSession() {
               name: data.name,
               email: data.email,
               role: data.role,
+              phone: data.phone,
+              avatar_url: data.avatar_url,
+              created_at: data.created_at,
             });
           }
         } else {
