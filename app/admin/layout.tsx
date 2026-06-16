@@ -33,9 +33,17 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { useAuth } from "@/components/providers/auth-context";
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const pathname = usePathname();
   const [counts, setCounts] = useState({ products: 0, orders: 0, categories: 0, users: 0, payments: 0 });
+
+  const getInitials = (name?: string) => {
+    if (!name) return "??";
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+  };
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -171,6 +179,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   payments: "Payments",
                   users: "Users",
                   reports: "Reports",
+                  profile: "Security & Profile",
                 };
 
                 const label = labels[segment] || segment;
@@ -200,7 +209,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
 
             <div className="flex items-center gap-4">
-
+               <Link href="/admin/dashboard/profile">
+                 <div className="h-9 w-9 rounded-full bg-luxe-primary/20 border border-luxe-primary/30 flex items-center justify-center text-[10px] font-bold text-luxe-primary uppercase cursor-pointer hover:bg-luxe-primary/30 transition-all overflow-hidden relative group">
+                    {user?.avatar_url ? (
+                      <img src={user.avatar_url} alt={user.name} className="size-full object-cover group-hover:scale-110 transition-transform" />
+                    ) : (
+                      getInitials(user?.name)
+                    )}
+                 </div>
+               </Link>
             </div>
           </header>
 
