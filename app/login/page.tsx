@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MagicCard } from "@/components/magicui/magic-card";
 import { Meteors } from "@/components/magicui/meteors";
 import { Eye, EyeOff, Lock, Mail, ArrowRight, ShieldCheck } from "lucide-react";
+import { useAuth } from "@/components/providers/auth-context";
+import { loginSchema } from "@/lib/validations/users";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -14,19 +17,35 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { login, isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.push("/");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError("Please enter both email and password.");
+    setError("");
+
+    // 1. Client-side validation with Zod
+    const validation = loginSchema.safeParse({ email, password });
+    if (!validation.success) {
+      setError(validation.error.issues[0].message);
       return;
     }
-    setError("");
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await login({ email, password });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Invalid credentials. Please try again.";
+      setError(message);
+    } finally {
       setLoading(false);
-      alert(`Successfully logged in as: ${email}`);
-    }, 1200);
+    }
   };
 
   const fillCredentials = (type: "customer" | "admin") => {
@@ -61,9 +80,9 @@ export default function LoginPage() {
           <span className="text-[12px] font-bold tracking-[0.25em] text-luxe-primary-fixed-dim uppercase block">
             Exclusivity Redefined
           </span>
-          <h1 className="text-[48px] md:text-[56px] leading-[1.1] font-light tracking-tight text-white">
+          <h1 className="text-[48px] md:text-[56px] leading-[1.1] font-light tracking-tight text-luxe-inverse-on-surface">
             Curating <br />
-            <span className="italic font-normal text-luxe-primary-fixed-dim">exceptional</span> <br />
+            <span className="italic font-normal text-luxe-primary">exceptional</span> <br />
             experiences.
           </h1>
           <p className="text-[16px] text-luxe-inverse-on-surface/70 leading-[1.6]">
@@ -72,7 +91,7 @@ export default function LoginPage() {
         </div>
 
         {/* Editorial Footer Note */}
-        <div className="z-10 flex items-center justify-between border-t border-white/10 pt-6 text-[12px] text-luxe-inverse-on-surface/50 tracking-wider">
+        <div className="z-10 flex items-center justify-between border-t border-luxe-inverse-on-surface/10 pt-6 text-[12px] text-luxe-inverse-on-surface/50 tracking-wider">
           <span>MEMBERSHIP PRIVILEGES</span>
           <span>EST. 2018</span>
         </div>
@@ -86,14 +105,14 @@ export default function LoginPage() {
         <div className="w-full max-w-[460px] z-10">
           {/* Replace Card layout with spotlight MagicCard */}
           <MagicCard
-            glowColor="rgba(79, 70, 229, 0.05)"
-            borderColor="rgba(79, 70, 229, 0.15)"
-            className="p-8 rounded-2xl relative overflow-hidden bg-white/70 dark:bg-luxe-inverse-surface/70 shadow-xl border border-luxe-outline-variant/15 flex flex-col justify-between"
+            glowColor="rgba(175, 255, 0, 0.06)"
+            borderColor="rgba(175, 255, 0, 0.12)"
+            className="p-0 rounded-2xl relative overflow-hidden bg-luxe-surface-container/80 backdrop-blur-xl shadow-2xl border border-white/5 flex flex-col justify-between"
           >
             {/* Top decorative stripe */}
-            <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-luxe-primary via-luxe-tertiary to-luxe-primary" />
+            <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-luxe-tertiary via-luxe-primary to-luxe-tertiary" />
 
-            <div className="space-y-6">
+            <div className="p-8 space-y-6">
               <div className="space-y-2">
                 <h2 className="text-[28px] font-semibold text-luxe-on-surface tracking-tight">
                   Sign In
@@ -117,7 +136,7 @@ export default function LoginPage() {
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-outline size-4" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 size-4" />
                     <Input
                       id="login-email"
                       type="email"
@@ -144,7 +163,7 @@ export default function LoginPage() {
                     </Link>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-outline size-4" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 size-4" />
                     <Input
                       id="login-password"
                       type={showPassword ? "text" : "password"}
@@ -157,7 +176,7 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-luxe-outline hover:text-luxe-on-surface transition-colors cursor-pointer"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 hover:text-luxe-primary transition-colors cursor-pointer"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -208,13 +227,13 @@ export default function LoginPage() {
                   </button>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-6 pt-4 border-t border-luxe-outline-variant/20 flex justify-center text-[13px] text-luxe-on-surface-variant">
-              <span>New to Luxe? </span>
-              <Link href="/signup" className="text-luxe-primary font-bold hover:underline ml-1">
-                Request Invitation
-              </Link>
+              <div className="mt-6 pt-4 border-t border-luxe-outline-variant/20 flex justify-center text-[13px] text-luxe-on-surface-variant">
+                <span>New to Luxe? </span>
+                <Link href="/signup" className="text-luxe-primary font-bold hover:underline ml-1">
+                  Request Invitation
+                </Link>
+              </div>
             </div>
           </MagicCard>
         </div>

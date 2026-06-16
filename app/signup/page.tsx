@@ -2,10 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Lock, Mail, User, ArrowRight, ShieldCheck, Check } from "lucide-react";
+import { useAuth } from "@/components/providers/auth-context";
+import { signupSchema } from "@/lib/validations/users";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -15,13 +18,21 @@ export default function SignupPage() {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { signup, isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.push("/");
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   // Password strength calculation
-  const [strength, setStrength] = useState<{ score: number; text: string; color: string }>({ score: 0, text: "Too Weak", color: "bg-luxe-outline-variant/30 text-luxe-outline" });
+  const [strength, setStrength] = useState<{ score: number; text: string; color: string }>({ score: 0, text: "Too Weak", color: "bg-luxe-outline-variant/30 text-luxe-on-surface-variant" });
 
   useEffect(() => {
     if (!password) {
-      setStrength({ score: 0, text: "Not Entered", color: "bg-luxe-outline-variant/30 text-luxe-outline" });
+      setStrength({ score: 0, text: "Not Entered", color: "bg-luxe-outline-variant/30 text-luxe-on-surface-variant" });
       return;
     }
 
@@ -40,26 +51,31 @@ export default function SignupPage() {
     }
   }, [password]);
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) {
-      setError("Please complete all fields.");
-      return;
-    }
+    setError("");
+
     if (!agreeTerms) {
       setError("Please accept the Membership Terms of Service.");
       return;
     }
-    if (strength.score < 2) {
-      setError("Please select a stronger password.");
+
+    // 1. Client-side validation with Zod
+    const validation = signupSchema.safeParse({ name, email, password });
+    if (!validation.success) {
+      setError(validation.error.issues[0].message);
       return;
     }
-    setError("");
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await signup({ name, email, password });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Registration failed. Please try again.";
+      setError(message);
+    } finally {
       setLoading(false);
-      alert(`Invitation request submitted for: ${email}`);
-    }, 1200);
+    }
   };
 
   const getScoreWidth = () => {
@@ -90,9 +106,9 @@ export default function SignupPage() {
           <span className="text-[12px] font-bold tracking-[0.25em] text-luxe-tertiary-fixed-dim uppercase block">
             A Lifetime of Privileges
           </span>
-          <h1 className="text-[48px] md:text-[56px] leading-[1.1] font-light tracking-tight text-white">
+          <h1 className="text-[48px] md:text-[56px] leading-[1.1] font-light tracking-tight text-luxe-inverse-on-surface">
             Access <br />
-            <span className="italic font-normal text-luxe-tertiary-fixed-dim">unrivaled</span> <br />
+            <span className="italic font-normal text-luxe-tertiary">unrivaled</span> <br />
             craftsmanship.
           </h1>
           <p className="text-[16px] text-luxe-inverse-on-surface/70 leading-[1.6]">
@@ -101,7 +117,7 @@ export default function SignupPage() {
         </div>
 
         {/* Footer Note */}
-        <div className="z-10 flex items-center justify-between border-t border-white/10 pt-6 text-[12px] text-luxe-inverse-on-surface/50 tracking-wider">
+        <div className="z-10 flex items-center justify-between border-t border-luxe-inverse-on-surface/10 pt-6 text-[12px] text-luxe-inverse-on-surface/50 tracking-wider">
           <span>MEMBERSHIP INVITATION</span>
           <span>EST. 2018</span>
         </div>
@@ -139,7 +155,7 @@ export default function SignupPage() {
                     Full Name
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-outline size-4" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 size-4" />
                     <Input
                       id="signup-name"
                       type="text"
@@ -158,7 +174,7 @@ export default function SignupPage() {
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-outline size-4" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 size-4" />
                     <Input
                       id="signup-email"
                       type="email"
@@ -177,7 +193,7 @@ export default function SignupPage() {
                     Password
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-outline size-4" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 size-4" />
                     <Input
                       id="signup-password"
                       type={showPassword ? "text" : "password"}
@@ -190,7 +206,7 @@ export default function SignupPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-luxe-outline hover:text-luxe-on-surface transition-colors cursor-pointer"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-luxe-on-surface-variant/70 hover:text-luxe-primary transition-colors cursor-pointer"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}

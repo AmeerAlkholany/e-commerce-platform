@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MagicCard } from "@/components/magicui/magic-card";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { useCart } from "@/components/providers/cart-context";
 
 interface ProductDetailClientProps {
   product: {
@@ -27,18 +27,22 @@ interface ProductDetailClientProps {
 const SIZES = ["S", "M", "L", "XL"];
 
 export function ProductDetailClient({ product }: ProductDetailClientProps) {
+  const { addToCart } = useCart();
   const [activeImage, setActiveImage] = useState(product.imageSrc);
   const [selectedSize, setSelectedSize] = useState("M");
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [cartState, setCartState] = useState<"idle" | "adding" | "success">("idle");
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     setCartState("adding");
-    setTimeout(() => {
+    try {
+      await addToCart(product.id, quantity);
       setCartState("success");
       setTimeout(() => setCartState("idle"), 2500);
-    }, 1000);
+    } catch {
+      setCartState("idle");
+    }
   };
 
   return (

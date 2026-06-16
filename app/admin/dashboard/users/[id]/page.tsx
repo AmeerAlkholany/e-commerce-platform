@@ -481,7 +481,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
                             <tr key={order.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                               <td className="px-6 py-4 font-bold text-white uppercase tracking-wider text-xs">
 
-                                <Link href={`/admin/orders/${order.id}`} className="group">
+                                <Link href={`/admin/dashboard/orders/${order.id}`} className="group">
                                   <div className="flex items-center gap-1.5 font-mono text-[11px] text-luxe-primary font-bold">
                                     ORD-{order.id}
                                     <ExternalLink className="size-2.5 opacity-0 group-hover:opacity-100 transition-opacity" />

@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLenis } from "lenis/react"
+import { useCart } from "@/components/providers/cart-context"
+import { useAuth } from "@/components/providers/auth-context"
 
 export interface NavLink {
   label: string
@@ -20,7 +22,9 @@ export interface NavbarProps {
   cartCount?: number
 }
 
-export function Navbar({ links = [], cartCount = 0 }: NavbarProps) {
+export function Navbar({ links = [] }: NavbarProps) {
+  const { cartCount, openCart } = useCart()
+  const { user, isAuthenticated, logout } = useAuth()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isSearchActive, setIsSearchActive] = useState(false)
@@ -50,7 +54,7 @@ export function Navbar({ links = [], cartCount = 0 }: NavbarProps) {
   const handleLinkClick = (href: string, e: React.MouseEvent) => {
     if (href.startsWith("#")) {
       e.preventDefault()
-      const element = document.querySelector(href)
+      const element = document.querySelector(href) as HTMLElement;
       if (element && lenis) {
         lenis.scrollTo(element, { offset: -100 })
       }
@@ -105,7 +109,7 @@ export function Navbar({ links = [], cartCount = 0 }: NavbarProps) {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8 ml-6">
-              {links.map((link, i) => (
+              {links.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
@@ -163,16 +167,39 @@ export function Navbar({ links = [], cartCount = 0 }: NavbarProps) {
                 aria-label="Account"
                 asChild
               >
-                <Link href="/login">
+                <Link href={isAuthenticated ? "/profile" : "/login"}>
                   <User className="size-5" />
                 </Link>
               </Button>
+
+              {/* Authenticated User Quick Menu */}
+              {isAuthenticated && (
+                <div className="hidden md:flex items-center gap-2 border-l border-white/10 ml-2 pl-4">
+                  <div className="flex flex-col items-end mr-1">
+                    <span className="text-[10px] font-bold text-primary tracking-tighter uppercase leading-none">
+                      {user?.role === "admin" ? "ADMINISTRATOR" : "VERIFIED CLIENT"}
+                    </span>
+                    <span className="text-[12px] font-medium text-white/90 truncate max-w-[100px]">
+                      {user?.name.split(" ")[0]}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => logout()}
+                    className="text-[10px] font-bold tracking-widest text-white/40 hover:text-primary hover:bg-transparent px-0 uppercase transition-colors"
+                  >
+                    Logout
+                  </Button>
+                </div>
+              )}
 
               <Button
                 variant="ghost"
                 size="icon"
                 className="relative text-white hover:bg-white/5 hover:text-primary size-9 rounded-full transition-all duration-200 active:scale-90"
                 aria-label="Shopping bag"
+                onClick={openCart}
               >
                 <ShoppingBag className="size-5" />
                 {cartCount > 0 && (

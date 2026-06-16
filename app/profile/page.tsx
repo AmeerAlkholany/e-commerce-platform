@@ -1,19 +1,39 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Mail, Phone, MapPin, ShieldCheck, CreditCard, Bell, Sparkles, UserCheck } from "lucide-react";
+import { User, Mail, Phone, MapPin, ShieldCheck, CreditCard, Bell, Sparkles, UserCheck, Loader2 } from "lucide-react";
+import { useAuth } from "@/components/providers/auth-context";
 
 export default function ProfilePage() {
-  const [firstName, setFirstName] = useState("Alexander");
-  const [lastName, setLastName] = useState("Vance");
-  const [email, setEmail] = useState("vip.vance@luxeglobal.com");
+  const { user, isLoading, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("+1 (555) 890-4820");
   const [country, setCountry] = useState("United States");
   const [tier] = useState("Platinum Member");
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isLoading, isAuthenticated, router]);
+
+  useEffect(() => {
+    if (user) {
+      const names = user.name.split(" ");
+      setFirstName(names[0] || "");
+      setLastName(names.slice(1).join(" ") || "");
+      setEmail(user.email);
+    }
+  }, [user]);
 
   const [notifCatalog, setNotifCatalog] = useState(true);
   const [notifPrelaunch, setNotifPrelaunch] = useState(true);
@@ -32,6 +52,16 @@ export default function ProfilePage() {
       setTimeout(() => setSuccess(false), 3000);
     }, 1000);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-luxe-surface flex items-center justify-center">
+        <Loader2 className="size-12 text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   return (
     <main className="min-h-screen bg-luxe-surface py-12 px-4 md:px-[64px] max-w-[1440px] mx-auto space-y-12">
