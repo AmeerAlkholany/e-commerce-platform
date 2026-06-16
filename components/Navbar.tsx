@@ -167,7 +167,7 @@ export function Navbar({ links = [] }: NavbarProps) {
                 aria-label="Account"
                 asChild
               >
-                <Link href={isAuthenticated ? "/profile" : "/login"}>
+                <Link href={isAuthenticated ? "/dashboard" : "/login"}>
                   <User className="size-5" />
                 </Link>
               </Button>

@@ -22,14 +22,14 @@ export function ClientLayout({
   legalLinks,
 }: ClientLayoutProps) {
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith("/admin");
+  const skipGlobalNav = pathname.startsWith("/admin") || pathname.startsWith("/dashboard");
 
   return (
     <AuthProvider>
       <CartProvider>
-        {!isAdmin && <Navbar links={navLinks} />}
+        {!skipGlobalNav && <Navbar links={navLinks} />}
         <main className="flex-1">{children}</main>
-        {!isAdmin && <Footer quickLinks={quickLinks} legalLinks={legalLinks} />}
+        {!skipGlobalNav && <Footer quickLinks={quickLinks} legalLinks={legalLinks} />}
         <CartDrawer />
       </CartProvider>
     </AuthProvider>

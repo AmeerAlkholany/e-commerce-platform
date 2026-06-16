@@ -206,4 +206,79 @@ export class AnalyticsService {
       growthRate: totalUsers > 0 ? (newUsers / totalUsers) * 100 : 0
     };
   }
+
+  /**
+   * Get client-specific stats (revenue, active orders, total spent)
+   */
+  static async getClientStats(userId: number) {
+    const [revenueAgg, orders, trend] = await Promise.all([
+      prisma.orders.aggregate({
+        where: { user_id: userId, status: { not: "cancelled" } },
+        _sum: { total: true },
+        _count: { id: true },
+        _avg: { total: true }
+      }),
+      prisma.orders.findMany({
+        where: { user_id: userId },
+        select: { status: true }
+      }),
+      this.getClientSalesTrend(userId, 30)
+    ]);
+
+    const activeOrders = orders.filter(o => o.status === "pending" || o.status === "paid" || o.status === "shipped").length;
+    const completedOrders = orders.filter(o => o.status === "delivered").length;
+    const pendingOrders = orders.filter(o => o.status === "pending").length;
+
+    return {
+      summary: {
+        totalSpent: Number(revenueAgg._sum.total || 0),
+        totalOrders: revenueAgg._count.id,
+        avgOrderValue: Number(revenueAgg._avg.total || 0),
+        activeOrders,
+        completedOrders,
+        pendingOrders,
+        status: "Active" 
+      },
+      charts: {
+        spendingTrend: trend
+      }
+    };
+  }
+
+  /**
+   * Get sales trend data for a specific client
+   */
+  static async getClientSalesTrend(userId: number, days: number = 30) {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const orders = await prisma.orders.findMany({
+      where: {
+        user_id: userId,
+        status: { not: "cancelled" },
+        created_at: { gte: startDate },
+      },
+      select: { total: true, created_at: true },
+      orderBy: { created_at: "asc" },
+    });
+
+    const trend: Record<string, { date: string; revenue: number; orders: number }> = {};
+    for (let i = 0; i < days; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split("T")[0];
+      trend[key] = { date: key, revenue: 0, orders: 0 };
+    }
+
+    orders.forEach((o) => {
+      if (!o.created_at) return;
+      const key = o.created_at.toISOString().split("T")[0];
+      if (trend[key]) {
+        trend[key].revenue += Number(o.total);
+        trend[key].orders += 1;
+      }
+    });
+
+    return Object.values(trend).sort((a, b) => a.date.localeCompare(b.date));
+  }
 }
