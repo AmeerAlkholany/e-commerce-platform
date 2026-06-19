@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/json";
-import { Prisma } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -179,7 +179,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
     console.error("❌ PUT ERROR:", error);
 
     // Detailed error logging
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       console.error("Prisma error code:", error.code);
       console.error("Prisma meta:", error.meta);
       return NextResponse.json(
@@ -222,7 +222,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   } catch (error) {
     console.error("❌ DELETE error:", error);
 
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2003") {
         return NextResponse.json(
           { error: "Product has orders. Cannot delete." },
