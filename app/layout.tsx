@@ -7,6 +7,7 @@ import { LenisProvider } from "@/components/lenis-provider";
 import { ClientLayout } from "@/components/ClientLayout";
 import QueryProvider from "@/components/providers/query-provider";
 import { Toaster } from "sonner";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -63,6 +64,7 @@ export default function RootLayout({
                 legalLinks={legalLinks}
               >
                 {children}
+                <SpeedInsights />
               </ClientLayout>
             </QueryProvider>
           </LenisProvider>
