@@ -1,17 +1,34 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/json";
+import { orders, order_items, products, users, categories } from "@prisma/client";
+
+type OrderItemWithProduct = order_items & {
+  products: Pick<products, "id" | "name" | "price" | "image_url"> | null;
+};
+
+type UserWithOrders = users & {
+  orders: Pick<orders, "total">[];
+  _count: {
+    orders: number;
+  };
+};
+
+type ProductWithCategoryAndItems = products & {
+  categories: Pick<categories, "name"> | null;
+  order_items: order_items[];
+};
 
 export async function GET(request: Request) {
   try {
     // 1. Sales by Month
-    const orders = await prisma.orders.findMany({
+    const orders: orders[] = await prisma.orders.findMany({
       where: { status: { not: "cancelled" } },
       orderBy: { created_at: "asc" },
     });
 
     const salesByMonth: Record<string, number> = {};
-    orders.forEach((order) => {
+    orders.forEach((order: orders) => {
       const month = new Date(order.created_at || new Date()).toLocaleString("en-US", {
         month: "short",
         year: "numeric",
@@ -20,7 +37,7 @@ export async function GET(request: Request) {
     });
 
     // 2. Top Selling Products
-    const orderItems = await prisma.order_items.findMany({
+    const orderItems: OrderItemWithProduct[] = await prisma.order_items.findMany({
       include: {
         products: {
           select: { id: true, name: true, price: true, image_url: true },
@@ -29,7 +46,7 @@ export async function GET(request: Request) {
     });
 
     const productSales: Record<number, { name: string; quantity: number; revenue: number }> = {};
-    orderItems.forEach((item) => {
+    orderItems.forEach((item: OrderItemWithProduct) => {
       const pid = item.product_id;
       if (!productSales[pid]) {
         productSales[pid] = {
@@ -48,7 +65,7 @@ export async function GET(request: Request) {
       .slice(0, 5);
 
     // 3. Top Customers
-    const usersWithOrders = await prisma.users.findMany({
+    const usersWithOrders: UserWithOrders[] = await prisma.users.findMany({
       where: {
         orders: {
           some: { status: { not: "cancelled" } },
@@ -71,16 +88,16 @@ export async function GET(request: Request) {
       },
     });
 
-    const topCustomers = usersWithOrders.map((user) => ({
+    const topCustomers = usersWithOrders.map((user: UserWithOrders) => ({
       id: user.id,
       name: user.name,
       email: user.email,
       ordersCount: user._count.orders,
-      totalSpent: user.orders.reduce((sum, o) => sum + Number(o.total), 0),
+      totalSpent: user.orders.reduce((sum: number, o: Pick<orders, "total">) => sum + Number(o.total), 0),
     }));
 
     // 4. Category Revenue
-    const products = await prisma.products.findMany({
+    const products: ProductWithCategoryAndItems[] = await prisma.products.findMany({
       include: {
         categories: { select: { name: true } },
         order_items: true,
@@ -88,10 +105,10 @@ export async function GET(request: Request) {
     });
 
     const categoryRevenue: Record<string, number> = {};
-    products.forEach((p) => {
+    products.forEach((p: ProductWithCategoryAndItems) => {
       const catName = p.categories?.name || "Uncategorized";
       const productRevenue = p.order_items.reduce(
-        (sum, item) => sum + Number(item.price) * item.quantity,
+        (sum: number, item: order_items) => sum + Number(item.price) * item.quantity,
         0
       );
       categoryRevenue[catName] = (categoryRevenue[catName] || 0) + productRevenue;
@@ -109,7 +126,7 @@ export async function GET(request: Request) {
         topCustomers,
         categoryData,
         totalOrders: orders.length,
-        totalRevenue: orders.reduce((sum, o) => sum + Number(o.total), 0),
+        totalRevenue: orders.reduce((sum: number, o: orders) => sum + Number(o.total), 0),
       })
     );
   } catch (error) {
