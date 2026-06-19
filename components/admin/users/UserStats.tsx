@@ -34,7 +34,6 @@ export function UserStats() {
         value={data?.suspended?.toLocaleString() || "0"}
         icon={<UserMinus className="size-5" />}
         isLoading={isLoading}
-        status="warning"
       />
     </div>
   );

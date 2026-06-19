@@ -13,7 +13,7 @@ function base64urlEncode(data: Uint8Array): string {
     .replace(/\//g, "_");
 }
 
-function base64urlDecode(str: string): Uint8Array {
+function base64urlDecode(str: string): Uint8Array<ArrayBuffer> {
   let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
   while (base64.length % 4) {
     base64 += "=";
@@ -23,7 +23,7 @@ function base64urlDecode(str: string): Uint8Array {
   for (let i = 0; i < binaryString.length; i++) {
     bytes[i] = binaryString.charCodeAt(i);
   }
-  return bytes;
+  return bytes as Uint8Array<ArrayBuffer>;
 }
 
 /**
